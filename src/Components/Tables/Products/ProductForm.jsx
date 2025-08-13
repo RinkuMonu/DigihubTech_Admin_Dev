@@ -114,8 +114,8 @@ console.log(categories,"caac")
       setSlug(initialData?.slug || "");
       setDescription(initialData?.description || "");
       setReferenceWebsite(initialData?.referenceWebsite || "");
-      setCategory(initialData?.category || "");
-      setBrand(initialData?.brand || "");
+      setCategory(initialData?.category?._id || "");
+      setBrand(initialData?.brand?._id || "");
       setKeyFeatures(initialData?.keyFeatures || [""]);
       setTags(initialData?.tags || []);
       setSpecs(
@@ -148,6 +148,8 @@ console.log(categories,"caac")
       );
       setVisibility(initialData?.visibility || "PUBLIC");
       setMetaKeywords(initialData?.seo?.metaKeywords || []);
+       setMetaTitle(initialData?.seo?.metaTitle || ""); // Add this line
+    setMetaDescription(initialData?.seo?.metaDescription || "");
       setPreviewImages(initialData?.images || []);
       setStatus(initialData?.status || "ACTIVE");
       setCodAvailable(initialData?.codAvailable ?? true);
