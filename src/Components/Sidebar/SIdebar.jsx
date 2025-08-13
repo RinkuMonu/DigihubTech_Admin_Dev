@@ -238,6 +238,14 @@ function Sidebar() {
         { key: '11', label: <Link to="/banners">Banners</Link> },
       ],
     },
+       {
+      key: 'sub73',
+      icon: <FolderAddOutlined />,
+      label: 'Brands',
+      children: [
+        { key: '13', label: <Link to="/brands">Brands</Link> },
+      ],
+    },
     {
       key: 'sub89',
       icon: <OrderedListOutlined />,

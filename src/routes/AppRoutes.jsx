@@ -17,6 +17,7 @@ import VendorsPage from '../Components/Tables/Vendors/VendorsPage';
 import RichtextEditor from '../Components/Editor/RicktextEditor';
 import PolicyPage from '../Components/Tables/Policy/PolicyPage';
 import BannersPage from '../Components/Tables/Banner/BannerPage';
+import BrandsPage from '../Components/Tables/Brands/BrandsPage';
 
 const AppRoutes = () => {
   useAxiosInterceptors();
@@ -37,6 +38,7 @@ const AppRoutes = () => {
       <Route path="/settings/changepassword" element={<ChangePassword />} />
       <Route path="/settings/edit" element={<EditProfile />} />
       <Route path="/banners" element={<BannersPage />} />
+      <Route path="/brands" element={<BrandsPage />} />
       
     </Routes>
   );

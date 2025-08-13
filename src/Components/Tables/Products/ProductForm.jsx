@@ -46,6 +46,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const [description, setDescription] = useState("");
   const [referenceWebsite, setReferenceWebsite] = useState("");
   const [category, setCategory] = useState("");
+  
   const [brand, setBrand] = useState("");
   const [brandsList, setBrandsList] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
@@ -81,7 +82,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [status, setStatus] = useState("ACTIVE");
   const { user, categories, brands } = useUser();
-
+console.log(categories,"caac")
   // New state for additional fields
   const [codAvailable, setCodAvailable] = useState(true);
   const [minOrderQty, setMinOrderQty] = useState(1);
