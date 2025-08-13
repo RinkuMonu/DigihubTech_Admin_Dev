@@ -1,14 +1,12 @@
 import axios from "axios";
 import { HandleAxiosError } from "./axioserror";
 
-
 const axiosInstance = axios.create({
-  // baseURL: "https://api.jajamblockprints.com", // Replace with your actual base URL
-  baseURL: "http://192.168.1.6:5008", // Replace with your actual base URL
-  // baseURL: "https://server.digihubtech.in", // Replace with your actual base URL
+  // baseURL: "http://localhost:5008",
+  baseURL: "https://devbackend.digihubtech.in/",
   headers: {
     "Content-Type": "application/json",
-     },
+  },
 });
 //backend kha h
 // Request Interceptor
@@ -29,15 +27,9 @@ axiosInstance.interceptors.response.use(
     return res;
   },
   (err) => {
-    HandleAxiosError(err)// Call the error handler function
+    HandleAxiosError(err); // Call the error handler function
     return Promise.reject(err);
   }
 );
 
-
-
 export { axiosInstance };
-
-
-
-
