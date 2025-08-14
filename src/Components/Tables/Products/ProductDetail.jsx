@@ -34,7 +34,7 @@ const ProductDetail = ({ open, onClose, data }) => {
                                 Description:
                             </Typography>
                             <Typography variant="body1" sx={{ marginTop: 0.5 ,}}>
-                                {data.description || "No Description"}
+                              <div dangerouslySetInnerHTML={{ __html: data.description || "No Description" }} />
                             </Typography>
                         </Grid>
                         <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
