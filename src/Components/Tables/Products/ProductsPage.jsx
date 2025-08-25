@@ -505,11 +505,9 @@
 
 // export default ProductsPage;
 
+"use client";
 
-
-"use client"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Paper,
   Typography,
@@ -532,114 +530,131 @@ import {
   Divider,
   Box,
   Menu, // Import Menu component
-} from "@mui/material"
-import MuiAlert from "@mui/material/Alert" // Import Alert for Snackbar severity
-import { apiDelete, apiGet } from "../../../api/apiMethods"
-import { axiosInstance } from "../../../api/axiosInstance" // Import axiosInstance
-import ProductForm from "./ProductForm"
-import ProductDetail from "./ProductDetail"
-import { DeleteForeverOutlined } from "@mui/icons-material"
-import DeleteDialog from "../Website/DeleteDialog"
-import { useUser } from "../../../Context/UserContext"
-import { makeStyles } from "@mui/styles"
+} from "@mui/material";
+import MuiAlert from "@mui/material/Alert"; // Import Alert for Snackbar severity
+import { apiDelete, apiGet } from "../../../api/apiMethods";
+import { axiosInstance } from "../../../api/axiosInstance"; // Import axiosInstance
+import ProductForm from "./ProductForm";
+import ProductDetail from "./ProductDetail";
+import { DeleteForeverOutlined } from "@mui/icons-material";
+import DeleteDialog from "../Website/DeleteDialog";
+import { useUser } from "../../../Context/UserContext";
+import { makeStyles } from "@mui/styles";
 
 const useStyles = makeStyles({
   selectInput: {
     minWidth: 200,
     fontSize: "14px",
   },
-})
+});
 
 const ProductsPage = () => {
-  const classes = useStyles()
-  const [data, setData] = useState([])
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedItemId, setSelectedItemId] = useState(null)
-  const [selectedWebsite, setSelectedWebsite] = useState(null)
-  const [searchInput, setSearchInput] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [sortBy, setSortBy] = useState("createdAt")
-  const [sortOrder, setSortOrder] = useState("desc")
-  const [pageSize, setPageSize] = useState(10)
-  const [websites, setWebsites] = useState([])
-  const [filterWebsite, setfilterWebsite] = useState("")
-  const [filterCategory, setFilterCategory] = useState("")
-  const [snackbarOpen, setSnackbarOpen] = useState(false)
-  const [snackbarMessage, setSnackbarMessage] = useState("")
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success") // 'success', 'error', 'info', 'warning'
+  const classes = useStyles();
+  const [data, setData] = useState([]);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState(null);
+  const [selectedWebsite, setSelectedWebsite] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [pageSize, setPageSize] = useState(10);
+  const [websites, setWebsites] = useState([]);
+  const [filterWebsite, setfilterWebsite] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // 'success', 'error', 'info', 'warning'
 
   // New state for Deal of the Day duration dropdown
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [selectedProductIdForDeal, setSelectedProductIdForDeal] = useState(null)
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedProductIdForDeal, setSelectedProductIdForDeal] =
+    useState(null);
 
-  const API_ENDPOINT = `api/product/getproducts`
+  const API_ENDPOINT = `api/product/getproducts`;
 
-  const { user, setCategories, categories } = useUser()
+  const { user, setCategories, categories } = useUser();
 
   const fetchData = async () => {
     try {
       const response = await apiGet(API_ENDPOINT, {
         referenceWebsite: filterWebsite,
-        search: searchInput,
-        page: currentPage,
-        limit: pageSize,
-        category: filterCategory,
-        sortBy,
-        sortOrder,
-      })
-      const { products, pagination } = response.data
-      setData(products || [])
-      setTotalPages(pagination?.totalPages || 1)
+        // search: searchInput,
+        // page: currentPage,
+        // limit: pageSize,
+        // category: filterCategory,
+        // sortBy,
+        // sortOrder,
+      });
+      console.log(
+        "responseresponseresponseresponserinku",
+        response?.data?.products
+      );
+      const products = response?.data?.products;
+      const pagination = response?.data?.pagination;
+
+      setData(products || []);
+      setTotalPages(pagination?.totalPages || 1);
     } catch (error) {
-      setData([])
-      console.error(error.message)
+      setData([]);
+      console.error(error.message);
     }
-  }
+  };
 
   const fetchDropdownData = async () => {
     try {
-      const [websitesResponse] = await Promise.all([apiGet("api/website")])
-      setWebsites(websitesResponse.data?.websites || [])
-      setfilterWebsite(websitesResponse.data?.websites[0]?._id)
+      const [websitesResponse] = await Promise.all([apiGet("api/website")]);
+      setWebsites(websitesResponse.data?.websites || []);
+      setfilterWebsite(websitesResponse.data?.websites[0]?._id);
     } catch (error) {
-      console.error("Failed to fetch dropdown data:", error)
+      console.error("Failed to fetch dropdown data:", error);
     }
-  }
+  };
 
   useEffect(() => {
-    if (!user) return
+    if (!user) return;
     if (user?.role === "super-admin") {
-      fetchDropdownData()
+      fetchDropdownData();
     } else {
-      setfilterWebsite(user?.referenceWebsite)
+      setfilterWebsite(user?.referenceWebsite);
     }
-  }, [user])
+  }, [user]);
 
   useEffect(() => {
     if (filterWebsite) {
-      fetchData()
+      fetchData();
     }
-  }, [filterWebsite, currentPage, searchInput, sortBy, sortOrder, pageSize, filterCategory])
+  }, [
+    filterWebsite,
+    currentPage,
+    searchInput,
+    sortBy,
+    sortOrder,
+    pageSize,
+    filterCategory,
+  ]);
 
   const deleteHandler = async (id) => {
-    const API_URL = `api/product/delete/${id}`
+    const API_URL = `api/product/delete/${id}`;
     try {
-      const response = await apiDelete(API_URL)
+      const response = await apiDelete(API_URL);
       if (response.status === 200) {
-        fetchData()
-        setSnackbarMessage("Product deleted successfully!")
-        setSnackbarSeverity("success")
-        setSnackbarOpen(true)
+        fetchData();
+        setSnackbarMessage("Product deleted successfully!");
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
       }
     } catch (error) {
-      console.error(error)
-      setSnackbarMessage(error.response?.data?.message || "Failed to delete product.")
-      setSnackbarSeverity("error")
-      setSnackbarOpen(true)
+      console.error(error);
+      setSnackbarMessage(
+        error.response?.data?.message || "Failed to delete product."
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
-  }
+  };
 
   const handleDealOfTheDay = async (productId, status, durationInHours) => {
     try {
@@ -647,59 +662,64 @@ const ProductsPage = () => {
         productId,
         status,
         durationInHours,
-      })
+      });
       if (response.status === 200) {
-        setSnackbarMessage(response.data.message || "Deal of the Day status updated successfully!")
-        setSnackbarSeverity("success")
-        setSnackbarOpen(true)
-        fetchData() // Refresh data to show updated status
+        setSnackbarMessage(
+          response.data.message ||
+            "Deal of the Day status updated successfully!"
+        );
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+        fetchData(); // Refresh data to show updated status
       }
     } catch (error) {
-      console.error("Failed to update Deal of the Day:", error)
-      setSnackbarMessage(error.response?.data?.message || "Failed to update Deal of the Day.")
-      setSnackbarSeverity("error")
-      setSnackbarOpen(true)
+      console.error("Failed to update Deal of the Day:", error);
+      setSnackbarMessage(
+        error.response?.data?.message || "Failed to update Deal of the Day."
+      );
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
-  }
+  };
 
   const openDialog = (id) => {
-    setSelectedItemId(id)
-    setDialogOpen(true)
-  }
+    setSelectedItemId(id);
+    setDialogOpen(true);
+  };
 
   const closeDialog = () => {
-    setDialogOpen(false)
-    setSelectedItemId(null)
-  }
+    setDialogOpen(false);
+    setSelectedItemId(null);
+  };
 
   const handlePageChange = (event, value) => {
-    setCurrentPage(value)
-  }
+    setCurrentPage(value);
+  };
 
   const handleSortChange = (field) => {
-    setSortBy(field)
-    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
-  }
+    setSortBy(field);
+    setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
+  };
 
   // Handlers for the Deal of the Day dropdown
   const handleClickDealMenu = (event, productId) => {
-    setAnchorEl(event.currentTarget)
-    setSelectedProductIdForDeal(productId)
-  }
+    setAnchorEl(event.currentTarget);
+    setSelectedProductIdForDeal(productId);
+  };
 
   const handleCloseDealMenu = () => {
-    setAnchorEl(null)
-    setSelectedProductIdForDeal(null)
-  }
+    setAnchorEl(null);
+    setSelectedProductIdForDeal(null);
+  };
 
   const handleSelectDuration = (duration) => {
     if (selectedProductIdForDeal) {
-      handleDealOfTheDay(selectedProductIdForDeal, true, duration) // Set status to true
+      handleDealOfTheDay(selectedProductIdForDeal, true, duration); // Set status to true
     }
-    handleCloseDealMenu()
-  }
+    handleCloseDealMenu();
+  };
 
-  const dealDurations = [1, 2, 4, 8, 12, 24] // Example durations in hours
+  const dealDurations = [1, 2, 4, 8, 12, 24]; // Example durations in hours
 
   return (
     <>
@@ -709,16 +729,33 @@ const ProductsPage = () => {
             <Typography
               variant="h5"
               gutterBottom
-              sx={{ flexGrow: 1, color: "#2a4172", fontWeight: "600", p: 0, mb: 0, fontSize: "20px", mt: 1 }}
+              sx={{
+                flexGrow: 1,
+                color: "#2a4172",
+                fontWeight: "600",
+                p: 0,
+                mb: 0,
+                fontSize: "20px",
+                mt: 1,
+              }}
             >
               Products
             </Typography>
           </Grid>
           <Grid item xs={2}>
-            <ProductForm categories={categories} websites={websites} dataHandler={fetchData} />
+            <ProductForm
+              categories={categories}
+              websites={websites}
+              dataHandler={fetchData}
+            />
           </Grid>
           <Grid item xs={2}>
-            <ProductForm addCategory={true} categories={categories} websites={websites} dataHandler={fetchData} />
+            <ProductForm
+              addCategory={true}
+              categories={categories}
+              websites={websites}
+              dataHandler={fetchData}
+            />
           </Grid>
         </Grid>
         <Divider sx={{ my: 1, borderBottomWidth: 1, mt: 1 }} />
@@ -732,8 +769,8 @@ const ProductsPage = () => {
               fullWidth
               value={searchInput}
               onChange={(e) => {
-                setSearchInput(e.target.value)
-                setCurrentPage(1)
+                setSearchInput(e.target.value);
+                setCurrentPage(1);
               }}
             />
           </Grid>
@@ -797,56 +834,107 @@ const ProductsPage = () => {
             </FormControl>
           </Grid>
           <Grid item xs={2}>
-            <Button fullWidth onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}>
+            <Button
+              fullWidth
+              onClick={() =>
+                setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+              }
+            >
               {sortOrder === "asc" ? "Ascending" : "Descending"}
             </Button>
           </Grid>
         </Grid>
         <TableContainer
           component={Paper}
-          sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", p: 0, my: 3 }}
+          sx={{
+            border: "1px solid #ddd",
+            whiteSpace: "nowrap",
+            padding: "8px",
+            p: 0,
+            my: 3,
+          }}
         >
           <Table sx={{ borderCollapse: "collapse" }}>
             <TableHead>
               <TableRow>
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>#</strong>
                 </TableCell>
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>Name</strong>
                 </TableCell>
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>Images</strong>
                 </TableCell>
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>Amount</strong>
                 </TableCell>
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>Discount</strong>
                 </TableCell>
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>Category</strong>
                 </TableCell>
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>Deal of the Day</strong>
                 </TableCell>{" "}
                 {/* New Table Header */}
                 <TableCell
-                  sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", backgroundColor: "#fbe5ec" }}
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
                 >
                   <strong>Actions</strong>
                 </TableCell>
@@ -860,23 +948,40 @@ const ProductsPage = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                data.map((item, index) => (
+                data?.map((item, index) => (
                   <TableRow key={item._id}>
-                    <TableCell sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px" }}>
+                    <TableCell
+                      sx={{
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
                       {index + (currentPage - 1) * pageSize + 1}
                     </TableCell>
                     <TableCell
                       onClick={() => {
-                        setSelectedWebsite(item)
-                        setDetailOpen(true)
+                        setSelectedWebsite(item);
+                        setDetailOpen(true);
                       }}
-                      sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px", cursor: "pointer" }}
+                      sx={{
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                        cursor: "pointer",
+                      }}
                     >
                       {item.productName || "NA"}
                     </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px" }}>
+                    <TableCell
+                      sx={{
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
                       <div style={{ display: "flex", gap: "4px" }}>
-                        {item.images.map((img, imgIndex) => (
+                        {item?.images?.map((img, imgIndex) => (
                           <img
                             key={imgIndex}
                             style={{
@@ -892,20 +997,59 @@ const ProductsPage = () => {
                         )) || "NA"}
                       </div>
                     </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px" }}>
-                      {item.price || "NA"} &#8377;
+                    <TableCell
+                      sx={{
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
+                      {item?.variants[0]?.pricing?.price || "NA"} &#8377;
                     </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px" }}>
-                      {item.discount || "0"} %
+                    <TableCell
+                      sx={{
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
+                      {item?.variants[0]?.pricing?.mrp &&
+                      item?.variants[0]?.pricing?.price
+                        ? Math.round(
+                            ((item.variants[0].pricing.mrp -
+                              item.variants[0].pricing.price) /
+                              item.variants[0].pricing.mrp) *
+                              100
+                          ) + " %"
+                        : "0 %"}
                     </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px" }}>
+                    <TableCell
+                      sx={{
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
                       {item.category?.name}
                     </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px" }}>
+                    <TableCell
+                      sx={{
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
                       {item.dealOfTheDay?.status ? "Active" : "Inactive"}
                     </TableCell>{" "}
                     {/* New Table Cell for Deal of the Day Status */}
-                    <TableCell sx={{ display: "flex", border: "1px solid #ddd", whiteSpace: "nowrap", padding: "8px" }}>
+                    <TableCell
+                      sx={{
+                        display: "flex",
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
                       <IconButton onClick={() => openDialog(item._id)}>
                         <DeleteForeverOutlined />
                       </IconButton>
@@ -928,7 +1072,9 @@ const ProductsPage = () => {
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={(event) => handleClickDealMenu(event, item._id)}
+                          onClick={(event) =>
+                            handleClickDealMenu(event, item._id)
+                          }
                           sx={{ ml: 1 }}
                         >
                           Make Deal
@@ -944,12 +1090,17 @@ const ProductsPage = () => {
         <ProductDetail
           open={detailOpen}
           onClose={() => {
-            setDetailOpen(false)
-            setSelectedWebsite(null)
+            setDetailOpen(false);
+            setSelectedWebsite(null);
           }}
           data={selectedWebsite}
         />
-        <DeleteDialog deleteHandler={deleteHandler} itemId={selectedItemId} open={dialogOpen} onClose={closeDialog} />
+        <DeleteDialog
+          deleteHandler={deleteHandler}
+          itemId={selectedItemId}
+          open={dialogOpen}
+          onClose={closeDialog}
+        />
         <Grid container justifyContent="right" sx={{ pr: 2, pb: 2 }}>
           <Pagination
             count={totalPages}
@@ -960,8 +1111,16 @@ const ProductsPage = () => {
           />
         </Grid>
       </Box>
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
-        <MuiAlert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <MuiAlert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
@@ -976,13 +1135,16 @@ const ProductsPage = () => {
         }}
       >
         {dealDurations.map((duration) => (
-          <MenuItem key={duration} onClick={() => handleSelectDuration(duration)}>
+          <MenuItem
+            key={duration}
+            onClick={() => handleSelectDuration(duration)}
+          >
             {duration} Hours
           </MenuItem>
         ))}
       </Menu>
     </>
-  )
-}
+  );
+};
 
-export default ProductsPage
+export default ProductsPage;

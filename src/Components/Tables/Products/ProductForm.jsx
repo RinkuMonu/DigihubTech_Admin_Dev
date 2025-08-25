@@ -28,8 +28,8 @@ import { makeStyles } from "@mui/styles";
 import DeleteIcon from "@mui/icons-material/Delete";
 import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const useStyles = makeStyles({
   selectInput: {
@@ -46,7 +46,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const [description, setDescription] = useState("");
   const [referenceWebsite, setReferenceWebsite] = useState("");
   const [category, setCategory] = useState("");
-  
+
   const [brand, setBrand] = useState("");
   const [brandsList, setBrandsList] = useState([]);
   const [imageFiles, setImageFiles] = useState([]);
@@ -82,7 +82,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [status, setStatus] = useState("ACTIVE");
   const { user, categories, brands } = useUser();
-console.log(categories,"caac")
+  console.log(categories, "caac");
   // New state for additional fields
   const [codAvailable, setCodAvailable] = useState(true);
   const [minOrderQty, setMinOrderQty] = useState(1);
@@ -148,23 +148,27 @@ console.log(categories,"caac")
       );
       setVisibility(initialData?.visibility || "PUBLIC");
       setMetaKeywords(initialData?.seo?.metaKeywords || []);
-       setMetaTitle(initialData?.seo?.metaTitle || ""); // Add this line
-    setMetaDescription(initialData?.seo?.metaDescription || "");
+      setMetaTitle(initialData?.seo?.metaTitle || ""); // Add this line
+      setMetaDescription(initialData?.seo?.metaDescription || "");
       setPreviewImages(initialData?.images || []);
       setStatus(initialData?.status || "ACTIVE");
       setCodAvailable(initialData?.codAvailable ?? true);
       setMinOrderQty(initialData?.minOrderQty || 1);
       setMaxOrderQty(initialData?.maxOrderQty || 10);
       setReturnPolicy(initialData?.returnPolicy || { eligible: true, days: 7 });
-      setWarranty(initialData?.warranty || { type: "Manufacturer", durationMonths: 0 });
+      setWarranty(
+        initialData?.warranty || { type: "Manufacturer", durationMonths: 0 }
+      );
       setTax(initialData?.tax || { hsn: "", gstRate: 0 });
-      setDealOfTheDay(initialData?.dealOfTheDay || {
-        status: false,
-        startTime: null,
-        endTime: null,
-        discountPercent: 0,
-        variantIds: [],
-      });
+      setDealOfTheDay(
+        initialData?.dealOfTheDay || {
+          status: false,
+          startTime: null,
+          endTime: null,
+          discountPercent: 0,
+          variantIds: [],
+        }
+      );
       setAttributesFlat(initialData?.attributesFlat || {});
     } else {
       resetForm();
@@ -305,28 +309,69 @@ console.log(categories,"caac")
     setSpecs(newSpecs);
   };
 
+  // Drop-in replacement
   const handleVariantChange = (index, field, value) => {
     const newVariants = [...variants];
-    
+    const v = newVariants[index] || (newVariants[index] = {});
+
+    // ✅ numeric fields ko sanitize (empty = "", warna 0+ number)
+    const isNumeric = (f) =>
+      [
+        "pricing.mrp",
+        "pricing.price",
+        "pricing.discount",
+        "pricing.tax",
+        "weight.value",
+        "dimensions.length",
+        "dimensions.width",
+        "dimensions.height",
+        "inventory.totalStock",
+        "inventory.lowStockThreshold",
+        "stock", // legacy
+      ].includes(f);
+
+    const norm = (f, raw) => {
+      if (!isNumeric(f)) return raw;
+      if (raw === "" || raw === null || raw === undefined) return "";
+      const n = Number(raw);
+      return Number.isNaN(n) ? 0 : Math.max(0, n);
+    };
+
     if (field.includes("options.")) {
       const optionField = field.split(".")[1];
-      newVariants[index].options[optionField] = value;
+      v.options = v.options || {};
+      v.options[optionField] = value;
     } else if (field.includes("pricing.")) {
       const pricingField = field.split(".")[1];
-      newVariants[index].pricing[pricingField] = value;
+      v.pricing = v.pricing || {};
+      v.pricing[pricingField] = norm(`pricing.${pricingField}`, value);
     } else if (field.includes("weight.")) {
       const weightField = field.split(".")[1];
-      newVariants[index].weight[weightField] = value;
+      v.weight = v.weight || {};
+      v.weight[weightField] = norm(`weight.${weightField}`, value);
     } else if (field.includes("dimensions.")) {
       const dimField = field.split(".")[1];
-      newVariants[index].dimensions[dimField] = value;
+      v.dimensions = v.dimensions || {};
+      v.dimensions[dimField] = norm(`dimensions.${dimField}`, value);
     } else if (field.includes("barcode.")) {
       const barcodeField = field.split(".")[1];
-      newVariants[index].barcode[barcodeField] = value;
+      v.barcode = v.barcode || {};
+      v.barcode[barcodeField] = value;
+    } else if (field.includes("inventory.")) {
+      // ✅ naya schema support
+      const invField = field.split(".")[1];
+      v.inventory = v.inventory || {};
+      v.inventory[invField] = norm(`inventory.${invField}`, value);
+    } else if (field === "stock") {
+      // ✅ legacy UI support: "stock" -> inventory.totalStock
+      v.inventory = v.inventory || {};
+      v.inventory.totalStock = norm("inventory.totalStock", value);
+      // optional: mirror rakho agar kahin aur 'stock' read ho raha ho
+      v.stock = v.inventory.totalStock;
     } else {
-      newVariants[index][field] = value;
+      v[field] = value;
     }
-    
+
     setVariants(newVariants);
   };
 
@@ -381,141 +426,199 @@ console.log(categories,"caac")
     setMetaKeywords(newKeywords);
   };
 
- const handleSubmit = async () => {
-  if (
-    (!addCategory &&
-      (!productName ||
-        !description ||
-        (!initialData && imageFiles.length === 0) ||
-        !referenceWebsite ||
-        !category)) ||
-    (addCategory && !productName)
-  ) {
-    setSnackbarMessage("Please fill all required fields");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-    return;
-  }
-
-  const formData = new FormData();
-
-  // Append all non-file fields first
-  formData.append("productName", productName);
-  formData.append("slug", slug);
-  formData.append("description", description);
-  formData.append("referenceWebsite", referenceWebsite);
-  formData.append("category", category);
-  formData.append("brand", brand);
-  formData.append("visibility", visibility);
-  formData.append("status", status);
-  formData.append("codAvailable", codAvailable);
-  formData.append("minOrderQty", minOrderQty);
-  formData.append("maxOrderQty", maxOrderQty);
-  formData.append("returnPolicy", JSON.stringify(returnPolicy));
-  formData.append("warranty", JSON.stringify(warranty));
-  formData.append("tax", JSON.stringify(tax));
-  formData.append("dealOfTheDay", JSON.stringify(dealOfTheDay));
-  formData.append("attributesFlat", JSON.stringify(attributesFlat));
-
-  // Append product images
-  imageFiles.forEach((file) => {
-    formData.append("images", file); // Make sure this matches your multer field name
-  });
-
-  // Append key features
-  keyFeatures.forEach((feature, index) => {
-    formData.append(`keyFeatures[${index}]`, feature);
-  });
-
-  // Append tags
-  tags.forEach((tag) => {
-    formData.append("tags[]", tag);
-  });
-
-  // Append specs
-  specs.forEach((spec, index) => {
-    formData.append(`specs[${index}][group]`, spec.group);
-    formData.append(`specs[${index}][key]`, spec.key);
-    formData.append(`specs[${index}][value]`, spec.value);
-    formData.append(`specs[${index}][unit]`, spec.unit);
-  });
-
-  // Append variants
-  variants.forEach((variant, index) => {
-    formData.append(`variants[${index}][sku]`, variant.sku);
-
-    // Append variant options
-    Object.entries(variant.options).forEach(([key, value]) => {
-      formData.append(`variants[${index}][options][${key}]`, value);
-    });
-
-    // Append pricing
-    formData.append(`variants[${index}][pricing][mrp]`, variant.pricing.mrp);
-    formData.append(`variants[${index}][pricing][price]`, variant.pricing.price);
-    formData.append(`variants[${index}][pricing][currency]`, variant.pricing.currency);
-
-    // Append other variant fields
-    formData.append(`variants[${index}][stock]`, variant.stock);
-    formData.append(`variants[${index}][status]`, variant.status);
-    formData.append(`variants[${index}][isDefault]`, variant.isDefault);
-
-    // Append weight
-    formData.append(`variants[${index}][weight][value]`, variant.weight.value);
-    formData.append(`variants[${index}][weight][unit]`, variant.weight.unit);
-
-    // Append dimensions
-    formData.append(`variants[${index}][dimensions][l]`, variant.dimensions.l);
-    formData.append(`variants[${index}][dimensions][w]`, variant.dimensions.w);
-    formData.append(`variants[${index}][dimensions][h]`, variant.dimensions.h);
-    formData.append(`variants[${index}][dimensions][unit]`, variant.dimensions.unit);
-
-    // Append barcode
-    formData.append(`variants[${index}][barcode][upc]`, variant.barcode.upc || "");
-    formData.append(`variants[${index}][barcode][ean]`, variant.barcode.ean || "");
-    formData.append(`variants[${index}][barcode][gtin]`, variant.barcode.gtin || "");
-
-    // Append variant images - THIS IS THE CRUCIAL PART
-    variant.variantImages.forEach((file, imgIndex) => {
-      formData.append(`variantImages_${index}`, file); // Changed from variants[${index}][variantImages][${imgIndex}]
-    });
-  });
-
-  // Append SEO fields
-  formData.append("seo[metaTitle]", metaTitle);
-  formData.append("seo[metaDescription]", metaDescription);
-  metaKeywords.forEach((keyword, index) => {
-    formData.append(`seo[metaKeywords][${index}]`, keyword);
-  });
-
-  try {
-    const response = initialData
-      ? await apiPut(`api/product/products/${initialData._id}`, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-      : await apiPost("api/product/products", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-
-    if (response.status === 200) {
-      setSnackbarMessage(
-        initialData ? "Product updated successfully" : "Product added successfully"
-      );
-      setSnackbarSeverity("success");
-      setOpen(false);
-      dataHandler();
+  const handleSubmit = async () => {
+    if (
+      (!addCategory &&
+        (!productName ||
+          !description ||
+          (!initialData && imageFiles.length === 0) ||
+          !referenceWebsite ||
+          !category)) ||
+      (addCategory && !productName)
+    ) {
+      setSnackbarMessage("Please fill all required fields");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
     }
-  } catch (error) {
-    console.error("Submission error:", error);
-    setSnackbarMessage("Failed to save product");
-    setSnackbarSeverity("error");
-  }
 
-  setSnackbarOpen(true);
-};
+    const formData = new FormData();
+
+    // Append all non-file fields first
+    formData.append("productName", productName);
+    formData.append("slug", slug);
+    formData.append("description", description);
+    formData.append("referenceWebsite", referenceWebsite);
+    formData.append("category", category);
+    formData.append("brand", brand);
+    formData.append("visibility", visibility);
+    formData.append("status", status);
+    formData.append("codAvailable", codAvailable);
+    formData.append("minOrderQty", minOrderQty);
+    formData.append("maxOrderQty", maxOrderQty);
+    formData.append("returnPolicy", JSON.stringify(returnPolicy));
+    formData.append("warranty", JSON.stringify(warranty));
+    formData.append("tax", JSON.stringify(tax));
+    formData.append("dealOfTheDay", JSON.stringify(dealOfTheDay));
+    formData.append("attributesFlat", JSON.stringify(attributesFlat));
+
+    // Append product images
+    imageFiles.forEach((file) => {
+      formData.append("images", file); // Make sure this matches your multer field name
+    });
+
+    // Append key features
+    keyFeatures.forEach((feature, index) => {
+      formData.append(`keyFeatures[${index}]`, feature);
+    });
+
+    // Append tags
+    tags.forEach((tag) => {
+      formData.append("tags[]", tag);
+    });
+
+    // Append specs
+    specs.forEach((spec, index) => {
+      formData.append(`specs[${index}][group]`, spec.group);
+      formData.append(`specs[${index}][key]`, spec.key);
+      formData.append(`specs[${index}][value]`, spec.value);
+      formData.append(`specs[${index}][unit]`, spec.unit);
+    });
+
+    // Append variants
+    variants.forEach((variant, index) => {
+      variant = {
+        ...variant,
+        inventory: variant.inventory || {
+          totalStock: variant.stock ?? 0,
+          lowStockThreshold: 5,
+        },
+      };
+
+      // Append variant options
+      Object.entries(variant.options).forEach(([key, value]) => {
+        formData.append(`variants[${index}][options][${key}]`, value);
+      });
+
+      // Append pricing
+      formData.append(`variants[${index}][pricing][mrp]`, variant.pricing.mrp);
+      formData.append(
+        `variants[${index}][pricing][price]`,
+        variant.pricing.price
+      );
+      formData.append(
+        `variants[${index}][pricing][currency]`,
+        variant.pricing.currency
+      );
+
+      // Append other variant fields
+      formData.append(
+        `variants[${index}][inventory][totalStock]`,
+        String(variant.inventory.totalStock ?? 0)
+      );
+      formData.append(
+        `variants[${index}][inventory][lowStockThreshold]`,
+        String(variant.inventory.lowStockThreshold ?? 5)
+      );
+
+      const safeSku = (
+        variant.sku ||
+        `${slug || productName || "prod"}-${index + 1}-${Date.now().toString(
+          36
+        )}`
+      )
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, "-")
+        .replace(/-+/g, "-")
+        .slice(0, 60);
+      formData.append(`variants[${index}][sku]`, safeSku);
+
+      formData.append(`variants[${index}][status]`, variant.status);
+      formData.append(`variants[${index}][isDefault]`, variant.isDefault);
+
+      // Append weight
+      formData.append(
+        `variants[${index}][weight][value]`,
+        variant.weight.value
+      );
+      formData.append(`variants[${index}][weight][unit]`, variant.weight.unit);
+
+      // Append dimensions
+      formData.append(
+        `variants[${index}][dimensions][l]`,
+        variant.dimensions.l
+      );
+      formData.append(
+        `variants[${index}][dimensions][w]`,
+        variant.dimensions.w
+      );
+      formData.append(
+        `variants[${index}][dimensions][h]`,
+        variant.dimensions.h
+      );
+      formData.append(
+        `variants[${index}][dimensions][unit]`,
+        variant.dimensions.unit
+      );
+
+      // Append barcode
+      formData.append(
+        `variants[${index}][barcode][upc]`,
+        variant.barcode.upc || ""
+      );
+      formData.append(
+        `variants[${index}][barcode][ean]`,
+        variant.barcode.ean || ""
+      );
+      formData.append(
+        `variants[${index}][barcode][gtin]`,
+        variant.barcode.gtin || ""
+      );
+
+      // Append variant images - THIS IS THE CRUCIAL PART
+      variant.variantImages.forEach((file, imgIndex) => {
+        formData.append(`variantImages_${index}`, file); // Changed from variants[${index}][variantImages][${imgIndex}]
+      });
+    });
+
+    // Append SEO fields
+    formData.append("seo[metaTitle]", metaTitle);
+    formData.append("seo[metaDescription]", metaDescription);
+    metaKeywords.forEach((keyword, index) => {
+      formData.append(`seo[metaKeywords][${index}]`, keyword);
+    });
+
+    try {
+      const response = initialData
+        ? await apiPut(`api/product/products/${initialData._id}`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+        : await apiPost("api/product/products", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+
+      if (response.status === 200) {
+        setSnackbarMessage(
+          initialData
+            ? "Product updated successfully"
+            : "Product added successfully"
+        );
+        setSnackbarSeverity("success");
+        setOpen(false);
+        dataHandler();
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      setSnackbarMessage("Failed to save product");
+      setSnackbarSeverity("error");
+    }
+
+    setSnackbarOpen(true);
+  };
 
   const handleClickOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -550,7 +653,13 @@ console.log(categories,"caac")
         </Button>
       ) : null}
 
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth scroll="paper">
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="md"
+        fullWidth
+        scroll="paper"
+      >
         <DialogTitle sx={{ color: "#872d67" }}>
           {initialData ? "Update Product" : "New Product"}
         </DialogTitle>
@@ -891,11 +1000,31 @@ console.log(categories,"caac")
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="Stock*"
+                        label="Total Stock*"
                         type="number"
-                        value={variant.stock}
+                        value={variant.inventory?.totalStock || 0}
                         onChange={(e) =>
-                          handleVariantChange(index, "stock", e.target.value)
+                          handleVariantChange(
+                            index,
+                            "inventory.totalStock",
+                            e.target.value
+                          )
+                        }
+                        margin="normal"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        label="Low Stock Threshold"
+                        type="number"
+                        value={variant.inventory?.lowStockThreshold || 5}
+                        onChange={(e) =>
+                          handleVariantChange(
+                            index,
+                            "inventory.lowStockThreshold",
+                            e.target.value
+                          )
                         }
                         margin="normal"
                       />
@@ -1150,7 +1279,9 @@ console.log(categories,"caac")
                     label="Minimum Order Quantity"
                     type="number"
                     value={minOrderQty}
-                    onChange={(e) => setMinOrderQty(parseInt(e.target.value) || 1)}
+                    onChange={(e) =>
+                      setMinOrderQty(parseInt(e.target.value) || 1)
+                    }
                     margin="normal"
                   />
                 </Grid>
@@ -1160,7 +1291,9 @@ console.log(categories,"caac")
                     label="Maximum Order Quantity"
                     type="number"
                     value={maxOrderQty}
-                    onChange={(e) => setMaxOrderQty(parseInt(e.target.value) || 10)}
+                    onChange={(e) =>
+                      setMaxOrderQty(parseInt(e.target.value) || 10)
+                    }
                     margin="normal"
                   />
                 </Grid>
