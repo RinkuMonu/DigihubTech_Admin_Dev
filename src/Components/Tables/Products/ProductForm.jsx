@@ -177,7 +177,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 
   useEffect(() => {
     if (user && !initialData) {
-      setReferenceWebsite(user.referenceWebsite || "");
+      setReferenceWebsite(user?.referenceWebsite || "");
     }
   }, [user, initialData]);
 
@@ -1489,7 +1489,7 @@ const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
                       <TextField
                         fullWidth
                         label="Variant SKUs (comma separated)"
-                        value={dealOfTheDay.variantIds.join(",")}
+                        value={dealOfTheDay?.variantIds?.join(",")}
                         onChange={(e) =>
                           setDealOfTheDay({
                             ...dealOfTheDay,
