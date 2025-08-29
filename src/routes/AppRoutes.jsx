@@ -19,6 +19,7 @@ import PolicyPage from "../Components/Tables/Policy/PolicyPage";
 import BannersPage from "../Components/Tables/Banner/BannerPage";
 import BrandsPage from "../Components/Tables/Brands/BrandsPage";
 import ParentCategoryPage from "../Components/Tables/ParentCategories/ParentCategoryPage";
+import CouponPage from "../Components/Tables/Coupons/CouponPage";
 
 const AppRoutes = () => {
   useAxiosInterceptors();
@@ -30,6 +31,7 @@ const AppRoutes = () => {
       <Route path="/products" element={<ProductsPage />} />
       <Route path="/users" element={<UsersPage />} />
       <Route path="/orders" element={<OrdersPage />} />
+      <Route path="/coupons" element={<CouponPage />} />
       <Route path="/vendors" element={<VendorsPage />} />
       <Route path="/textEditor" element={<RichtextEditor />} />
       <Route path="/policy" element={<PolicyPage />} />
@@ -41,7 +43,7 @@ const AppRoutes = () => {
       <Route path="/banners" element={<BannersPage />} />
       <Route path="/brands" element={<BrandsPage />} />
 
-      <Route path="/ParentCategoryPage" element={<ParentCategoryPage />} /> 
+      <Route path="/ParentCategoryPage" element={<ParentCategoryPage />} />
     </Routes>
   );
 };

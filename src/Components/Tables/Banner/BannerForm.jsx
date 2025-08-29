@@ -75,20 +75,23 @@ const BannerForm = ({ dataHandler, initialData, websites }) => {
   };
 
   const handleSubmit = async () => {
+
     const finalDescription =
       description === "customPrice" ? `maxPrice=${customPrice}` : description;
-    if (
-      !bannerName ||
-      !finalDescription ||
-      imageFiles.length === 0 ||
-      !referenceWebsite ||
-      !position ||
-      !deviceType
-    ) {
-      setSnackbarMessage("Please fill all required fields");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-      return;
+    if (!initialData) {
+      if (
+        !bannerName ||
+        !finalDescription ||
+        imageFiles.length === 0 ||
+        !referenceWebsite ||
+        !position ||
+        !deviceType
+      ) {
+        setSnackbarMessage("Please fill all required fields");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
+        return;
+      }
     }
 
     const formData = new FormData();

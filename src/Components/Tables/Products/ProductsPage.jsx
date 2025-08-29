@@ -536,11 +536,11 @@ import { apiDelete, apiGet } from "../../../api/apiMethods";
 import { axiosInstance } from "../../../api/axiosInstance"; // Import axiosInstance
 import ProductForm from "./ProductForm";
 import ProductDetail from "./ProductDetail";
-import { DeleteForeverOutlined } from "@mui/icons-material";
+import { DeleteForeverOutlined, LocalOffer } from "@mui/icons-material";
 import DeleteDialog from "../Website/DeleteDialog";
 import { useUser } from "../../../Context/UserContext";
 import { makeStyles } from "@mui/styles";
-
+import OfferDialog from "./OfferDialog";
 const useStyles = makeStyles({
   selectInput: {
     minWidth: 200,
@@ -601,6 +601,21 @@ const ProductsPage = () => {
       setData([]);
       console.error(error.message);
     }
+  };
+
+
+
+  const [offerDialogOpen, setOfferDialogOpen] = useState(false);
+  const [selectedProductForOffer, setSelectedProductForOffer] = useState(null);
+
+  const handleOpenOfferDialog = (productId) => {
+    setSelectedProductForOffer(productId);
+    setOfferDialogOpen(true);
+  };
+
+  const handleCloseOfferDialog = () => {
+    setOfferDialogOpen(false);
+    setSelectedProductForOffer(null);
   };
 
   const fetchDropdownData = async () => {
@@ -666,7 +681,7 @@ const ProductsPage = () => {
       if (response.status === 200) {
         setSnackbarMessage(
           response.data.message ||
-            "Deal of the Day status updated successfully!"
+          "Deal of the Day status updated successfully!"
         );
         setSnackbarSeverity("success");
         setSnackbarOpen(true);
@@ -749,14 +764,14 @@ const ProductsPage = () => {
               dataHandler={fetchData}
             />
           </Grid>
-          <Grid item xs={2}>
+          {/* <Grid item xs={2}>
             <ProductForm
               addCategory={true}
               categories={categories}
               websites={websites}
               dataHandler={fetchData}
             />
-          </Grid>
+          </Grid> */}
         </Grid>
         <Divider sx={{ my: 1, borderBottomWidth: 1, mt: 1 }} />
         <Grid container spacing={3} alignItems="center" sx={{ mt: 0, px: 0 }}>
@@ -925,8 +940,20 @@ const ProductsPage = () => {
                     backgroundColor: "#fbe5ec",
                   }}
                 >
+                  <strong>Coupon Code</strong>
+                </TableCell>
+                <TableCell
+                  sx={{
+                    border: "1px solid #ddd",
+                    whiteSpace: "nowrap",
+                    padding: "8px",
+                    backgroundColor: "#fbe5ec",
+                  }}
+                >
                   <strong>Deal of the Day</strong>
                 </TableCell>{" "}
+
+
                 {/* New Table Header */}
                 <TableCell
                   sx={{
@@ -1014,13 +1041,13 @@ const ProductsPage = () => {
                       }}
                     >
                       {item?.variants[0]?.pricing?.mrp &&
-                      item?.variants[0]?.pricing?.price
+                        item?.variants[0]?.pricing?.price
                         ? Math.round(
-                            ((item.variants[0].pricing.mrp -
-                              item.variants[0].pricing.price) /
-                              item.variants[0].pricing.mrp) *
-                              100
-                          ) + " %"
+                          ((item.variants[0].pricing.mrp -
+                            item.variants[0].pricing.price) /
+                            item.variants[0].pricing.mrp) *
+                          100
+                        ) + " %"
                         : "0 %"}
                     </TableCell>
                     <TableCell
@@ -1039,31 +1066,85 @@ const ProductsPage = () => {
                         padding: "8px",
                       }}
                     >
-                      {item.dealOfTheDay?.status ? "Active" : "Inactive"}
-                    </TableCell>{" "}
-                    {/* New Table Cell for Deal of the Day Status */}
+                      {item.coupon ? (
+                        <div 
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+                            gap: "4px",
+                            textAlign:"center"
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              color: "#1976d2",
+                            }}
+                          >
+                            {item.coupon.code}
+                          </span>
+                          {/* <span
+                            style={{
+                              fontSize: "0.9rem",
+                              color: "#2e7d32",
+                            }}
+                          >
+                            {item.coupon.discountValue}% OFF
+                          </span> */}
+                        </div>
+                      ) : (
+                        <span>
+                          -
+                        </span>
+                      )}
+                    </TableCell>
+
                     <TableCell
                       sx={{
-                        display: "flex",
                         border: "1px solid #ddd",
                         whiteSpace: "nowrap",
                         padding: "8px",
                       }}
                     >
-                      <IconButton onClick={() => openDialog(item._id)}>
+                      {item.dealOfTheDay?.status ? "Active" : "Inactive"}
+                    </TableCell>{" "}
+
+                    {/* New Table Cell for Deal of the Day Status */}
+                    <TableCell
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        border: "1px solid #ddd",
+                        whiteSpace: "nowrap",
+                        padding: "8px",
+                      }}
+                    >
+                      {/* Delete Button */}
+                      <IconButton color="error" onClick={() => openDialog(item._id)}>
                         <DeleteForeverOutlined />
                       </IconButton>
+
+                      {/* Assign Coupon/Offer */}
+                      <IconButton onClick={() => handleOpenOfferDialog(item._id)}>
+                        <LocalOffer />
+                      </IconButton>
+
+                      {/* Edit Product */}
                       <ProductForm
                         categories={categories}
                         websites={websites}
                         dataHandler={fetchData}
                         initialData={item}
                       />
+
+                      {/* Deal of the Day Toggle */}
                       {item.dealOfTheDay?.status ? (
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={() => handleDealOfTheDay(item._id, false, 0)} // Set status to false, duration 0
+                          color="error"
+                          onClick={() => handleDealOfTheDay(item._id, false, 0)}
                           sx={{ ml: 1 }}
                         >
                           Remove Deal
@@ -1072,15 +1153,25 @@ const ProductsPage = () => {
                         <Button
                           variant="outlined"
                           size="small"
-                          onClick={(event) =>
-                            handleClickDealMenu(event, item._id)
-                          }
+                          color="primary"
+                          onClick={(event) => handleClickDealMenu(event, item._id)}
                           sx={{ ml: 1 }}
                         >
                           Make Deal
                         </Button>
                       )}
+
+                      {/* Global Offer Dialog */}
+                      {selectedProductForOffer === item._id && (
+                        <OfferDialog
+                          open={offerDialogOpen}
+                          onClose={handleCloseOfferDialog}
+                          productId={selectedProductForOffer}
+                          onSuccess={fetchData}
+                        />
+                      )}
                     </TableCell>
+
                   </TableRow>
                 ))
               )}
