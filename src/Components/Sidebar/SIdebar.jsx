@@ -11,6 +11,7 @@ import {
   OrderedListOutlined,
   UserAddOutlined,
   FolderAddOutlined,
+  TagOutlined
 } from "@ant-design/icons";
 import { Avatar, Button, Layout, Menu, Dropdown, message, theme } from "antd";
 import { useNavigate } from "react-router";
@@ -269,6 +270,17 @@ function Sidebar() {
       ],
     },
     {
+      key: "coupons",
+      icon: <TagOutlined />,
+      label: "Coupons",
+      children: [
+        {
+          key: "coupons",
+          label: <Link to="/coupons">Coupons</Link>,
+        },
+      ],
+    },
+    {
       key: "sub9",
       icon: <SettingOutlined />,
       label: "Settings",
@@ -315,7 +327,7 @@ function Sidebar() {
     user?.role === "super-admin"
       ? [...commonMenuItems, ...adminMenuItems]
       : user?.role === "admin"
-      ? [
+        ? [
           ...commonMenuItems,
           {
             key: "sub6",
@@ -326,7 +338,7 @@ function Sidebar() {
             ],
           },
         ]
-      : [];
+        : [];
 
   return (
     <>
