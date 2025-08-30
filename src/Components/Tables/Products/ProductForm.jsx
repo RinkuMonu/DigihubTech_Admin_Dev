@@ -1732,7 +1732,6 @@ const useStyles = makeStyles({
 
 export const ProductForm = ({ isOpen, onClose, initialData }) => {
   const { user, categories } = useUser();
-  console.log(initialData);
 
   const [activeTab, setActiveTab] = useState("basic");
   const [brands, setBrands] = useState([]);
