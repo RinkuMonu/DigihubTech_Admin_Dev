@@ -534,9 +534,9 @@ import {
 import MuiAlert from "@mui/material/Alert"; // Import Alert for Snackbar severity
 import { apiDelete, apiGet } from "../../../api/apiMethods";
 import { axiosInstance } from "../../../api/axiosInstance"; // Import axiosInstance
-import ProductForm from "./ProductForm";
+import { ProductForm } from "./ProductForm";
 import ProductDetail from "./ProductDetail";
-import { DeleteForeverOutlined, LocalOffer } from "@mui/icons-material";
+import { DeleteForeverOutlined, Edit, LocalOffer } from "@mui/icons-material";
 import DeleteDialog from "../Website/DeleteDialog";
 import { useUser } from "../../../Context/UserContext";
 import { makeStyles } from "@mui/styles";
@@ -567,6 +567,10 @@ const ProductsPage = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success"); // 'success', 'error', 'info', 'warning'
+
+  const [initialData, setInitialData] = useState(null);
+  const [isModelOpen, setIsModelOpen] = useState(false);
+
 
   // New state for Deal of the Day duration dropdown
   const [anchorEl, setAnchorEl] = useState(null);
@@ -758,10 +762,17 @@ const ProductsPage = () => {
             </Typography>
           </Grid>
           <Grid item xs={2}>
+            <button onClick={() => {
+              setIsModelOpen(true);
+              setInitialData(null);
+            }} className="pm-btn pm-btn--primary">Add Product</button>
             <ProductForm
-              categories={categories}
-              websites={websites}
-              dataHandler={fetchData}
+              isOpen={isModelOpen}
+              onClose={() => setIsModelOpen(false)}
+              // categories={categories}
+              // websites={websites}
+              // dataHandler={fetchData}
+              initialData={null}
             />
           </Grid>
           {/* <Grid item xs={2}>
@@ -1067,13 +1078,13 @@ const ProductsPage = () => {
                       }}
                     >
                       {item.coupon ? (
-                        <div 
+                        <div
                           style={{
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "flex-start",
                             gap: "4px",
-                            textAlign:"center"
+                            textAlign: "center"
                           }}
                         >
                           <span
@@ -1131,13 +1142,30 @@ const ProductsPage = () => {
                       </IconButton>
 
                       {/* Edit Product */}
-                      <ProductForm
+                      {/* <ProductForm
                         categories={categories}
                         websites={websites}
                         dataHandler={fetchData}
                         initialData={item}
-                      />
-
+                      /> */}
+                      <Grid item xs={2}>
+                        <IconButton color="success"
+                          onClick={() => {
+                            setIsModelOpen(true);
+                            setInitialData(item);
+                          }}
+                        >
+                          <Edit className="" />
+                        </IconButton>
+                        <ProductForm
+                          isOpen={isModelOpen}
+                          onClose={() => setIsModelOpen(false)}
+                          // categories={categories}
+                          // websites={websites}
+                          // dataHandler={fetchData}
+                          initialData={initialData}
+                        />
+                      </Grid>
                       {/* Deal of the Day Toggle */}
                       {item.dealOfTheDay?.status ? (
                         <Button

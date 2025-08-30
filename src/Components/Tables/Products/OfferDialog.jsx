@@ -88,7 +88,7 @@ const OfferDialog = ({ open, onClose, productId, initialDiscount = 0, onSuccess 
                         value={selectedCoupon}
                         onChange={(e) => setSelectedCoupon(e.target.value)}
                     >
-                        <MenuItem value="">None</MenuItem>
+                        <MenuItem value="none">None</MenuItem>
                         {coupons.map((coupon) => (
                             <MenuItem key={coupon._id} value={coupon._id}>
                                 {coupon.code} - {coupon.discountValue}% OFF
