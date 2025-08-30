@@ -1737,6 +1737,9 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
   const [brands, setBrands] = useState([]);
   const [websites, setWebsites] = useState([]);
   const [uploadedImages, setUploadedImages] = useState({});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
   // Main product state
   const [productData, setProductData] = useState({
@@ -1902,6 +1905,29 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     });
   };
 
+
+
+  const handleAddTag = () => {
+    const input = document.getElementById("new-tag");
+    if (input.value) {
+      setProductData((prev) => ({
+        ...prev,
+        tags: [...prev.tags, input.value],
+      }));
+      input.value = ""; // Clear the input after adding the tag
+    }
+  };
+
+  const handleRemoveTag = (index) => {
+    setProductData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index),
+    }));
+  };
+
+
+
+
   // Handle image uploads
 
   const handleImageUpload = (e, variantIndex = null) => {
@@ -1996,23 +2022,28 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     try {
       if (initialData?._id) {
         // Update existing product
-        await apiPut(`/api/product/products/${initialData._id}`, formData, {
+        const response = await apiPut(`/api/product/products/${initialData._id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        alert("Product updated successfully!");
+        setSnackbarMessage(response?.data?.message || "Product updated successfully!");
+        setSnackbarSeverity("success");
       } else {
         // Create new product
-        await apiPost("/api/product/products", formData, {
+        const response = await apiPost("/api/product/products", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        alert("Product created successfully!");
+        setSnackbarMessage(response?.data?.message || "Product created successfully!");
+        setSnackbarSeverity("success");
       }
 
       onClose();
     } catch (error) {
       console.error("Error saving product:", error);
-      alert("Failed to save product");
+      setSnackbarMessage(error.response?.data?.message || "Request failed");
+      setSnackbarSeverity("error");
     }
+    setSnackbarOpen(true);
+
   };
 
 
@@ -2470,7 +2501,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                     const input = document.getElementById("new-tag");
                     if (input.value) {
                       setProductData((prev) => ({ ...prev, tags: [...prev.tags, input.value] }));
-                      input.value = "";
+                      // input.value = "";
                     }
                   }} className="pm-btn pm-btn--ghost">Add</button>
                 </div>
@@ -2507,6 +2538,19 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
           </div>
         </form>
       </div>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <SnackbarContent
+          message={snackbarMessage}
+          style={{
+            backgroundColor: snackbarSeverity === "success" ? "green" : "red",
+          }}
+        />
+      </Snackbar>
     </div>
   );
 };
