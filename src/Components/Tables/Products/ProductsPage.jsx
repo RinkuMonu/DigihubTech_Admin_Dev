@@ -653,6 +653,7 @@ const ProductsPage = () => {
     sortOrder,
     pageSize,
     filterCategory,
+    isModelOpen 
   ]);
 
   const deleteHandler = async (id) => {
