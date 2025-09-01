@@ -763,10 +763,10 @@ const ProductsPage = () => {
             </Typography>
           </Grid>
           <Grid item xs={2}>
-            <button onClick={() => {
+            <Button onClick={() => {
               setIsModelOpen(true);
               setInitialData(null);
-            }} className="pm-btn pm-btn--primary">Add Product</button>
+            }} className="pm-btn pm-btn--primary">Add Product</Button>
             <ProductForm
               isOpen={isModelOpen}
               onClose={() => setIsModelOpen(false)}
