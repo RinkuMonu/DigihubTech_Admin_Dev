@@ -20,6 +20,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
+
 import { apiGet, apiPost, apiPut } from "../../../api/apiMethods";
 import { EditNoteOutlined } from "@mui/icons-material";
 import { useUser } from "../../../Context/UserContext";
@@ -30,7 +31,7 @@ import "react-quill/dist/quill.snow.css";
 import ReactQuill from "react-quill";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "./productFrom.css"
+import "./productFrom.css";
 const useStyles = makeStyles({
   selectInput: {
     minWidth: 200,
@@ -65,7 +66,6 @@ const useStyles = makeStyles({
 //     { label: "", value: "", type: "Text" }
 //   ]);
 //   // console.log(fields);
-
 
 //   const addField = () => {
 //     setFields([...fields, { label: "", value: "", type: "Text" }]);
@@ -128,11 +128,6 @@ const useStyles = makeStyles({
 //     variantIds: [],
 //   });
 //   const [attributesFlat, setAttributesFlat] = useState({});
-
-
-
-
-
 
 //   useEffect(() => {
 //     if (initialData) {
@@ -537,7 +532,6 @@ const useStyles = makeStyles({
 //         formData.append(`variants[${index}][options][${optIndex}][type]`, opt.type);
 //         formData.append(`variants[${index}][options][${optIndex}][value]`, opt.value);
 //       });
-
 
 //       // Append pricing
 //       formData.append(`variants[${index}][pricing][mrp]`, variant.pricing.mrp);
@@ -1023,19 +1017,11 @@ const useStyles = makeStyles({
 //                       </Grid>
 //                     ))}
 
-
 //                     <Grid item xs={12}>
 //                       <Button variant="outlined" color="primary" onClick={addField}>
 //                         + Add Input Field
 //                       </Button>
 //                     </Grid>
-
-
-
-
-
-
-
 
 //                     <Grid item xs={12} md={6}>
 //                       <TextField
@@ -1725,13 +1711,11 @@ const useStyles = makeStyles({
 
 // export default ProductForm;
 
-
-
-
-
-
 export const ProductForm = ({ isOpen, onClose, initialData }) => {
   const { user, categories } = useUser();
+
+
+  const classes = useStyles();
 
   const [activeTab, setActiveTab] = useState("basic");
   const [brands, setBrands] = useState([]);
@@ -1797,12 +1781,17 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     }
   }, [isOpen]);
 
-
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        // Pre-fill form when editing
-        setProductData(initialData);
+        // Pre-fill form when editing - make sure to use IDs for category and brand
+        const formattedData = {
+          ...initialData,
+          // Ensure category and brand are set to their IDs
+          category: initialData.category?._id || initialData.category || "",
+          brand: initialData.brand?._id || initialData.brand || "",
+        };
+        setProductData(formattedData);
       } else {
         // Reset form when adding
         setProductData({
@@ -1859,8 +1848,6 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     }
   }, [isOpen, initialData, user?.referenceWebsite]);
 
-
-
   const fetchBrands = async () => {
     try {
       const response = await apiGet("/api/brand/getbrand");
@@ -1905,8 +1892,6 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     });
   };
 
-
-
   const handleAddTag = () => {
     const input = document.getElementById("new-tag");
     if (input.value) {
@@ -1925,15 +1910,11 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     }));
   };
 
-
-
-
   // Handle image uploads
-
   const handleImageUpload = (e, variantIndex = null) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-
+    
     setUploadedImages((prev) => {
       const key = variantIndex !== null ? `variant_${variantIndex}` : "product";
       return {
@@ -1942,7 +1923,6 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
       };
     });
   };
-
 
   // Remove image
   const removeImage = (imageIndex, variantIndex = null) => {
@@ -2022,17 +2002,25 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     try {
       if (initialData?._id) {
         // Update existing product
-        const response = await apiPut(`/api/product/products/${initialData._id}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        setSnackbarMessage(response?.data?.message || "Product updated successfully!");
+        const response = await apiPut(
+          `/api/product/products/${initialData._id}`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+        setSnackbarMessage(
+          response?.data?.message || "Product updated successfully!"
+        );
         setSnackbarSeverity("success");
       } else {
         // Create new product
         const response = await apiPost("/api/product/products", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        setSnackbarMessage(response?.data?.message || "Product created successfully!");
+        setSnackbarMessage(
+          response?.data?.message || "Product created successfully!"
+        );
         setSnackbarSeverity("success");
       }
 
@@ -2043,10 +2031,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
       setSnackbarSeverity("error");
     }
     setSnackbarOpen(true);
-
   };
-
-
 
   if (!isOpen) return null;
 
@@ -2056,20 +2041,48 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
         {/* Header */}
         <div className="pm-header">
           <h2> {initialData ? "Edit Product" : "Add New Product"} </h2>
-          <button onClick={onClose} className="pm-close pm-focusable" aria-label="Close">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <Button
+            onClick={onClose}
+            className="pm-close pm-focusable"
+            aria-label="Close"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Tabs */}
         <div className="pm-tabs">
           <nav className="pm-tabs__list">
-            {["basic", "content", "variants", "pricing", "shipping", "seo", "advanced"].map((tab) => (
-              <button key={tab} onClick={() => setActiveTab(tab)} className={`pm-tab ${activeTab === tab ? "pm-tab--active" : ""}`}>
+            {[
+              "basic",
+              "content",
+              "variants",
+              "pricing",
+              "shipping",
+              "seo",
+              "advanced",
+            ].map((tab) => (
+              <Button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pm-tab ${
+                  activeTab === tab ? "pm-tab--active" : ""
+                }`}
+              >
                 {tab}
-              </button>
+              </Button>
             ))}
           </nav>
         </div>
@@ -2078,479 +2091,1221 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
         <form onSubmit={handleSubmit} className="pm-section">
           {/* Basic Information Tab */}
           {activeTab === "basic" && (
-            <div className="pm-grid-2">
-              <div>
-                <label className="pm-label">Product Name *</label>
-                <input type="text" name="productName" value={productData.productName} onChange={handleInputChange} className="pm-input" required />
-              </div>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Product Name *"
+                  name="productName"
+                  value={productData.productName}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
 
-              <div>
-                <label className="pm-label">Category *</label>
-                <select name="category" value={productData.category} onChange={handleInputChange} className="pm-select" required>
-                  <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    name="category"
+                    value={productData.category}
+                    onChange={handleInputChange}
+                    className={classes.selectInput}
+                  >
+                    <MenuItem value="">
+                      <em>Select Category</em>
+                    </MenuItem>
+                    {categories.map((cat) => (
+                      <MenuItem key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
-              <div>
-                <label className="pm-label">Brand *</label>
-                <select name="brand" value={productData.brand} onChange={handleInputChange} className="pm-select" required>
-                  <option value="">Select Brand</option>
-                  {brands?.map((brand) => (
-                    <option key={brand._id} value={brand._id}>{brand.name}</option>
-                  ))}
-                </select>
-              </div>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Brand</InputLabel>
+                  <Select
+                    name="brand"
+                    value={productData.brand}
+                    onChange={handleInputChange}
+                    className={classes.selectInput}
+                  >
+                    <MenuItem value="">
+                      <em>Select Brand</em>
+                    </MenuItem>
+                    {brands?.map((brand) => (
+                      <MenuItem key={brand._id} value={brand._id}>
+                        {brand.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
-              {/* <div>
-                <label className="pm-label">Reference Website</label>
-                <select name="referenceWebsite" value={productData.referenceWebsite} onChange={handleInputChange} className="pm-select">
-                  <option value="">Select Website</option>
-                  {websites.map((site) => (
-                    <option key={site._id} value={site._id}>{site.name}</option>
-                  ))}
-                </select>
-              </div> */}
-
-              <div>
-                <label className="pm-label">Status</label>
-                <select name="status" value={productData.status} onChange={handleInputChange} className="pm-select">
-                  <option value="ACTIVE">Active</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="INACTIVE">Inactive</option>
-                  <option value="ARCHIVED">Archived</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="pm-label">Visibility</label>
-                <select name="visibility" value={productData.visibility} onChange={handleInputChange} className="pm-select">
-                  <option value="PUBLIC">Public</option>
-                  <option value="PRIVATE">Private</option>
-                </select>
-              </div>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    name="status"
+                    value={productData.status}
+                    onChange={handleInputChange}
+                    className={classes.selectInput}
+                  >
+                    <MenuItem value="ACTIVE">Active</MenuItem>
+                    <MenuItem value="DRAFT">Draft</MenuItem>
+                    <MenuItem value="INACTIVE">Inactive</MenuItem>
+                    <MenuItem value="ARCHIVED">Archived</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Visibility</InputLabel>
+                  <Select
+                    name="visibility"
+                    value={productData.visibility}
+                    onChange={handleInputChange}
+                    className={classes.selectInput}
+                  >
+                    <MenuItem value="PUBLIC">Public</MenuItem>
+                    <MenuItem value="PRIVATE">Private</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
 
               {/* Product Images */}
-              <div className="sm:col-span-2">
-                <label className="pm-label">Product Images</label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem", marginTop: ".25rem" }}>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Product Images</Typography>
+                <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
                   {productData.images.map((image, index) => (
-                    <div key={index} className="pm-img">
-                      <img src={image} alt={`Product ${index}`} />
-                      <button type="button" onClick={() => removeImage(index)} className="pm-img__remove" aria-label="Remove image">×</button>
-                    </div>
+                    <Box
+                      key={index}
+                      sx={{
+                        position: "relative",
+                        width: 100,
+                        height: 100,
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        boxShadow: 1,
+                      }}
+                    >
+                      <img
+                        src={image}
+                        alt={`Product ${index}`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          bgcolor: "rgba(255,255,255,0.7)",
+                        }}
+                        onClick={() => removeImage(index)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
                   ))}
-                  <label className="pm-uploader">
-                    <input type="file" multiple onChange={(e) => handleImageUpload(e)} className="hidden" />
-                    <span>+ Add</span>
-                  </label>
-                </div>
-              </div>
-            </div>
+
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    sx={{
+                      height: 100,
+                      width: 100,
+                      borderStyle: "dashed",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    + Add
+                    <input
+                      type="file"
+                      hidden
+                      multiple
+                      onChange={handleImageUpload}
+                    />
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
           )}
 
           {/* Variants Tab */}
           {activeTab === "variants" && (
-            <div className="pm-section">
+            <Box>
               {productData.variants.map((variant, index) => (
-                <div key={index} className="pm-card">
-                  <div className="pm-card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>Variant {index + 1}</span>
-                    <div style={{ display: "flex", gap: ".5rem", alignItems: "center" }}>
-                      <label className="pm-inline">
-                        <input type="checkbox" checked={variant.isDefault} onChange={(e) => {
-                          const newVariants = productData.variants.map((v, i) => ({ ...v, isDefault: i === index ? e.target.checked : false }));
-                          setProductData((prev) => ({ ...prev, variants: newVariants }));
-                        }} />
-                        <span>Default Variant</span>
-                      </label>
+                <Box key={index} sx={{ mb: 3 }}>
+                  {/* Card header */}
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb={2}
+                  >
+                    <Typography variant="h6">Variant {index + 1}</Typography>
+                    <Box display="flex" gap={1} alignItems="center">
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={variant.isDefault}
+                            onChange={(e) => {
+                              const newVariants = productData.variants.map(
+                                (v, i) => ({
+                                  ...v,
+                                  isDefault:
+                                    i === index ? e.target.checked : false,
+                                })
+                              );
+                              setProductData((prev) => ({
+                                ...prev,
+                                variants: newVariants,
+                              }));
+                            }}
+                          />
+                        }
+                        label="Default Variant"
+                      />
                       {productData.variants.length > 1 && (
-                        <button type="button" onClick={() => removeVariant(index)} className="pm-btn pm-btn--danger">Remove</button>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => removeVariant(index)}
+                        >
+                          Remove
+                        </Button>
                       )}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
 
-                  <div className="pm-grid-2">
-                    <div>
-                      <label className="pm-label">SKU *</label>
-                      <input type="text" value={variant.sku} onChange={(e) => handleVariantChange(index, "sku", e.target.value)} className="pm-input" required />
-                    </div>
+                  {/* Variant details */}
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        required
+                        label="SKU"
+                        value={variant.sku}
+                        onChange={(e) =>
+                          handleVariantChange(index, "sku", e.target.value)
+                        }
+                      />
+                    </Grid>
 
-                    <div>
-                      <label className="pm-label">Status</label>
-                      <select value={variant.status} onChange={(e) => handleVariantChange(index, "status", e.target.value)} className="pm-select">
-                        <option value="IN_STOCK">In Stock</option>
-                        <option value="OUT_OF_STOCK">Out of Stock</option>
-                        <option value="PREORDER">Preorder</option>
-                        <option value="DISCONTINUED">Discontinued</option>
-                      </select>
-                    </div>
+                    <Grid item xs={12} sm={6}>
+                      <FormControl fullWidth>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                          value={variant.status}
+                          onChange={(e) =>
+                            handleVariantChange(index, "status", e.target.value)
+                          }
+                        >
+                          <MenuItem value="IN_STOCK">In Stock</MenuItem>
+                          <MenuItem value="OUT_OF_STOCK">Out of Stock</MenuItem>
+                          <MenuItem value="PREORDER">Preorder</MenuItem>
+                          <MenuItem value="DISCONTINUED">Discontinued</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
 
-                    <div>
-                      <label className="pm-label">Stock Quantity</label>
-                      <input type="number" min="0" value={variant.inventory.totalStock} onChange={(e) => handleVariantChange(index, "inventory.totalStock", parseInt(e.target.value))} className="pm-input" />
-                    </div>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        type="number"
+                        label="Stock Quantity"
+                        value={variant.inventory.totalStock}
+                        onChange={(e) =>
+                          handleVariantChange(
+                            index,
+                            "inventory.totalStock",
+                            parseInt(e.target.value, 10)
+                          )
+                        }
+                      />
+                    </Grid>
 
-                    <div>
-                      <label className="pm-label">Low Stock Threshold</label>
-                      <input type="number" min="0" value={variant.inventory.lowStockThreshold} onChange={(e) => handleVariantChange(index, "inventory.lowStockThreshold", parseInt(e.target.value))} className="pm-input" />
-                    </div>
-                  </div>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        type="number"
+                        label="Low Stock Threshold"
+                        value={variant.inventory.lowStockThreshold}
+                        onChange={(e) =>
+                          handleVariantChange(
+                            index,
+                            "inventory.lowStockThreshold",
+                            parseInt(e.target.value, 10)
+                          )
+                        }
+                      />
+                    </Grid>
+                  </Grid>
 
                   {/* Variant Images */}
-                  <div className="pm-divider">
-                    <label className="pm-label">Variant Images</label>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem", marginTop: ".25rem" }}>
+                  <Box mt={2}>
+                    <Typography variant="subtitle1">Variant Images</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
                       {variant.images.map((image, imgIndex) => (
-                        <div key={imgIndex} className="pm-img">
-                          <img src={image} alt={`Variant ${index} ${imgIndex}`} />
-                          <button type="button" onClick={() => removeImage(imgIndex, index)} className="pm-img__remove" aria-label="Remove variant image">×</button>
-                        </div>
+                        <Box
+                          key={imgIndex}
+                          sx={{
+                            position: "relative",
+                            width: 100,
+                            height: 100,
+                            borderRadius: 2,
+                            overflow: "hidden",
+                            boxShadow: 1,
+                          }}
+                        >
+                          <img
+                            src={image}
+                            alt={`Variant ${index} ${imgIndex}`}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 4,
+                              right: 4,
+                              bgcolor: "rgba(255,255,255,0.7)",
+                            }}
+                            onClick={() => removeImage(imgIndex, index)}
+                          >
+                            ×
+                          </IconButton>
+                        </Box>
                       ))}
-                      <label className="pm-uploader">
-                        <input type="file" multiple onChange={(e) => handleImageUpload(e, index)} className="hidden" />
-                        <span>+ Add</span>
-                      </label>
-                    </div>
-                  </div>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        sx={{
+                          height: 100,
+                          width: 100,
+                          borderStyle: "dashed",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        + Add
+                        <input
+                          type="file"
+                          hidden
+                          multiple
+                          onChange={(e) => handleImageUpload(e, index)}
+                        />
+                      </Button>
+                    </Box>
+                  </Box>
 
                   {/* Variant Options */}
-                  <div className="pm-divider">
-                    <h4 className="pm-card-title">Variant Options</h4>
-                    <div style={{ display: "grid", gap: ".5rem" }}>
+                  <Box mt={3}>
+                    <Typography variant="subtitle1">Variant Options</Typography>
+                    <Box display="flex" flexDirection="column" gap={1} mt={1}>
                       {Object.entries(variant.options).map(([key, value]) => (
-                        <div key={key} style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
-                          <span className="pm-label" style={{ margin: 0 }}>{key}:</span>
-                          <span>{value}</span>
-                          <button type="button" onClick={() => { const newOptions = { ...variant.options }; delete newOptions[key]; handleVariantChange(index, "options", newOptions); }} className="pm-btn pm-btn--danger">Remove</button>
-                        </div>
+                        <Box
+                          key={key}
+                          display="flex"
+                          gap={1}
+                          alignItems="center"
+                        >
+                          <Typography variant="body2">
+                            {key}: {value}
+                          </Typography>
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              const newOptions = { ...variant.options };
+                              delete newOptions[key];
+                              handleVariantChange(index, "options", newOptions);
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </Box>
                       ))}
-                      <div style={{ display: "flex", gap: ".5rem" }}>
-                        <input type="text" placeholder="Option name (e.g., Color)" className="pm-input" id={`option-key-${index}`} />
-                        <input type="text" placeholder="Option value (e.g., Red)" className="pm-input" id={`option-value-${index}`} />
-                        <button type="button" onClick={() => {
-                          const keyInput = document.getElementById(`option-key-${index}`);
-                          const valueInput = document.getElementById(`option-value-${index}`);
-                          if (keyInput.value && valueInput.value) {
-                            handleVariantChange(index, "options", { ...variant.options, [keyInput.value]: valueInput.value });
-                            keyInput.value = ""; valueInput.value = "";
+
+                      <Box display="flex" gap={1}>
+                        <TextField
+                          size="small"
+                          placeholder="Option name (e.g., Color)"
+                          id={`option-key-${index}`}
+                        />
+                        <TextField
+                          size="small"
+                          placeholder="Option value (e.g., Red)"
+                          id={`option-value-${index}`}
+                        />
+                        <Button
+                          variant="outlined"
+                          onClick={() => {
+                            const keyInput = document.getElementById(
+                              `option-key-${index}`
+                            );
+                            const valueInput = document.getElementById(
+                              `option-value-${index}`
+                            );
+                            if (keyInput.value && valueInput.value) {
+                              handleVariantChange(index, "options", {
+                                ...variant.options,
+                                [keyInput.value]: valueInput.value,
+                              });
+                              keyInput.value = "";
+                              valueInput.value = "";
+                            }
+                          }}
+                        >
+                          Add Option
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  {/* Weight & Dimensions */}
+                  <Grid container spacing={2} mt={3}>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Weight
+                      </Typography>
+                      <Box display="flex" gap={1}>
+                        <TextField
+                          type="number"
+                          placeholder="Value"
+                          value={variant.weight.value}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "weight.value",
+                              parseFloat(e.target.value)
+                            )
                           }
-                        }} className="pm-btn pm-btn--ghost">Add Option</button>
-                      </div>
-                    </div>
-                  </div>
+                        />
+                        <FormControl sx={{ minWidth: 100 }}>
+                          <Select
+                            value={variant.weight.unit}
+                            onChange={(e) =>
+                              handleVariantChange(
+                                index,
+                                "weight.unit",
+                                e.target.value
+                              )
+                            }
+                          >
+                            <MenuItem value="g">g</MenuItem>
+                            <MenuItem value="kg">kg</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Grid>
 
-                  {/* Weight and Dimensions */}
-                  <div className="pm-divider pm-grid-2">
-                    <div>
-                      <label className="pm-label">Weight</label>
-                      <div style={{ display: "flex", gap: ".5rem" }}>
-                        <input type="number" min="0" step="0.01" value={variant.weight.value} onChange={(e) => handleVariantChange(index, "weight.value", parseFloat(e.target.value))} className="pm-input" placeholder="Value" />
-                        <select value={variant.weight.unit} onChange={(e) => handleVariantChange(index, "weight.unit", e.target.value)} className="pm-select">
-                          <option value="g">g</option>
-                          <option value="kg">kg</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="pm-label">Dimensions</label>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: ".5rem" }}>
-                        <input type="number" min="0" step="0.01" value={variant.dimensions.l} onChange={(e) => handleVariantChange(index, "dimensions.l", parseFloat(e.target.value))} className="pm-input" placeholder="Length" />
-                        <input type="number" min="0" step="0.01" value={variant.dimensions.w} onChange={(e) => handleVariantChange(index, "dimensions.w", parseFloat(e.target.value))} className="pm-input" placeholder="Width" />
-                        <input type="number" min="0" step="0.01" value={variant.dimensions.h} onChange={(e) => handleVariantChange(index, "dimensions.h", parseFloat(e.target.value))} className="pm-input" placeholder="Height" />
-                      </div>
-                      <select value={variant.dimensions.unit} onChange={(e) => handleVariantChange(index, "dimensions.unit", e.target.value)} className="pm-select" style={{ marginTop: ".5rem", width: "100%" }}>
-                        <option value="cm">cm</option>
-                        <option value="in">in</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Dimensions
+                      </Typography>
+                      <Box
+                        display="grid"
+                        gridTemplateColumns="repeat(3,1fr)"
+                        gap={1}
+                      >
+                        <TextField
+                          type="number"
+                          placeholder="Length"
+                          value={variant.dimensions.l}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "dimensions.l",
+                              parseFloat(e.target.value)
+                            )
+                          }
+                        />
+                        <TextField
+                          type="number"
+                          placeholder="Width"
+                          value={variant.dimensions.w}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "dimensions.w",
+                              parseFloat(e.target.value)
+                            )
+                          }
+                        />
+                        <TextField
+                          type="number"
+                          placeholder="Height"
+                          value={variant.dimensions.h}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "dimensions.h",
+                              parseFloat(e.target.value)
+                            )
+                          }
+                        />
+                      </Box>
+                      <FormControl fullWidth sx={{ mt: 1 }}>
+                        <Select
+                          value={variant.dimensions.unit}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "dimensions.unit",
+                              e.target.value
+                            )
+                          }
+                        >
+                          <MenuItem value="cm">cm</MenuItem>
+                          <MenuItem value="in">in</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                </Box>
               ))}
 
-              <button type="button" onClick={addVariant} className="pm-btn pm-btn--secondary" style={{ width: "100%" }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="primary"
+                onClick={addVariant}
+                sx={{ mt: 2 }}
+              >
                 + Add Another Variant
-              </button>
-            </div>
+              </Button>
+            </Box>
           )}
 
           {/* Pricing Tab */}
           {activeTab === "pricing" && (
-            <div className="pm-section">
-              <div className="pm-grid-2">
-                <div>
-                  <label className="pm-label">Discount (%)</label>
-                  <input type="number" min="0" max="100" name="discount" value={productData.discount} onChange={handleInputChange} className="pm-input" />
-                </div>
+            <Box>
+              {/* Global Pricing */}
+              <Grid container spacing={2} mb={3}>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Discount (%)"
+                    name="discount"
+                    inputProps={{ min: 0, max: 100 }}
+                    value={productData.discount}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
 
-                <div>
-                  <label className="pm-label">Tax (GST Rate %)</label>
-                  <input type="number" min="0" max="28" value={productData.tax.gstRate} onChange={(e) => handleNestedChange("tax", "gstRate", parseInt(e.target.value))} className="pm-input" />
-                </div>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Tax (GST Rate %)"
+                    inputProps={{ min: 0, max: 28 }}
+                    value={productData.tax.gstRate}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "tax",
+                        "gstRate",
+                        parseInt(e.target.value)
+                      )
+                    }
+                  />
+                </Grid>
 
-                <div>
-                  <label className="pm-label">HSN Code</label>
-                  <input type="text" value={productData.tax.hsn} onChange={(e) => handleNestedChange("tax", "hsn", e.target.value)} className="pm-input" />
-                </div>
-              </div>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="HSN Code"
+                    value={productData.tax.hsn}
+                    onChange={(e) =>
+                      handleNestedChange("tax", "hsn", e.target.value)
+                    }
+                  />
+                </Grid>
+              </Grid>
 
-              <div className="pm-divider">
-                <h3 className="pm-card-title">Variant Pricing</h3>
+              {/* Variant Pricing */}
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Variant Pricing
+                </Typography>
                 {productData.variants.map((variant, index) => (
-                  <div key={index} className="pm-card" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: ".75rem" }}>
-                    <div style={{ fontWeight: 600 }}>Variant: {variant.sku || `#${index + 1}`}</div>
-                    <div>
-                      <label className="pm-label">MRP *</label>
-                      <input type="number" min="0" step="0.01" value={variant.pricing.mrp} onChange={(e) => handleVariantChange(index, "pricing.mrp", parseFloat(e.target.value))} className="pm-input" required />
-                    </div>
-                    <div>
-                      <label className="pm-label">Selling Price *</label>
-                      <input type="number" min="0" step="0.01" value={variant.pricing.price} onChange={(e) => handleVariantChange(index, "pricing.price", parseFloat(e.target.value))} className="pm-input" required />
-                    </div>
-                    <div>
-                      <label className="pm-label">Currency</label>
-                      <select value={variant.pricing.currency} onChange={(e) => handleVariantChange(index, "pricing.currency", e.target.value)} className="pm-select">
-                        <option value="INR">INR</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                      </select>
-                    </div>
-                  </div>
+                  <Grid
+                    container
+                    spacing={2}
+                    key={index}
+                    sx={{
+                      mb: 2,
+                      border: "1px solid #eee",
+                      p: 2,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Grid item xs={12}>
+                      <Typography fontWeight={600}>
+                        Variant: {variant.sku || `#${index + 1}`}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        required
+                        type="number"
+                        label="MRP *"
+                        inputProps={{ min: 0, step: "0.01" }}
+                        value={variant.pricing.mrp}
+                        onChange={(e) =>
+                          handleVariantChange(
+                            index,
+                            "pricing.mrp",
+                            parseFloat(e.target.value)
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        fullWidth
+                        required
+                        type="number"
+                        label="Selling Price *"
+                        inputProps={{ min: 0, step: "0.01" }}
+                        value={variant.pricing.price}
+                        onChange={(e) =>
+                          handleVariantChange(
+                            index,
+                            "pricing.price",
+                            parseFloat(e.target.value)
+                          )
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Currency"
+                        value={variant.pricing.currency}
+                        onChange={(e) =>
+                          handleVariantChange(
+                            index,
+                            "pricing.currency",
+                            e.target.value
+                          )
+                        }
+                      >
+                        <MenuItem value="INR">INR</MenuItem>
+                        <MenuItem value="USD">USD</MenuItem>
+                        <MenuItem value="EUR">EUR</MenuItem>
+                      </TextField>
+                    </Grid>
+                  </Grid>
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
 
           {/* Content Tab */}
           {activeTab === "content" && (
-            <div className="pm-section">
-              <div>
-                <label className="pm-label">Description *</label>
-                <textarea name="description" value={productData.description} onChange={handleInputChange} rows={4} className="pm-textarea" required />
-              </div>
+            <Box>
+              {/* Description */}
+              <Box mb={3}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Description *
+                </Typography>
+                <TextField
+                  fullWidth
+                  required
+                  multiline
+                  rows={4}
+                  name="description"
+                  value={productData.description}
+                  onChange={handleInputChange}
+                  placeholder="Enter product description"
+                />
+              </Box>
 
-              <div>
-                <label className="pm-label">Key Features</label>
+              {/* Key Features */}
+              <Box mb={3}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Key Features
+                </Typography>
                 {productData.keyFeatures.map((feature, index) => (
-                  <div key={index} style={{ display: "flex", gap: ".5rem", marginBottom: ".5rem" }}>
-                    <input type="text" value={feature} onChange={(e) => {
-                      const newFeatures = [...productData.keyFeatures];
-                      newFeatures[index] = e.target.value;
-                      setProductData((prev) => ({ ...prev, keyFeatures: newFeatures }));
-                    }} className="pm-input" placeholder="Feature description" />
-                    <button type="button" onClick={() => {
-                      const newFeatures = productData.keyFeatures.filter((_, i) => i !== index);
-                      setProductData((prev) => ({ ...prev, keyFeatures: newFeatures }));
-                    }} className="pm-btn pm-btn--danger">Remove</button>
-                  </div>
+                  <Box
+                    key={index}
+                    display="flex"
+                    gap={1}
+                    alignItems="center"
+                    mb={1}
+                  >
+                    <TextField
+                      fullWidth
+                      placeholder="Feature description"
+                      value={feature}
+                      onChange={(e) => {
+                        const newFeatures = [...productData.keyFeatures];
+                        newFeatures[index] = e.target.value;
+                        setProductData((prev) => ({
+                          ...prev,
+                          keyFeatures: newFeatures,
+                        }));
+                      }}
+                    />
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => {
+                        const newFeatures = productData.keyFeatures.filter(
+                          (_, i) => i !== index
+                        );
+                        setProductData((prev) => ({
+                          ...prev,
+                          keyFeatures: newFeatures,
+                        }));
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
                 ))}
-                <button type="button" onClick={() => setProductData((prev) => ({ ...prev, keyFeatures: [...prev.keyFeatures, ""] }))} className="pm-btn pm-btn--ghost">Add Feature</button>
-              </div>
 
-              <div>
-                <label className="pm-label">Specifications</label>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setProductData((prev) => ({
+                      ...prev,
+                      keyFeatures: [...prev.keyFeatures, ""],
+                    }))
+                  }
+                >
+                  Add Feature
+                </Button>
+              </Box>
+
+              {/* Specifications */}
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Specifications
+                </Typography>
                 {productData.specs.map((spec, index) => (
-                  <div key={index} className="pm-card" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: ".5rem" }}>
-                    <input type="text" placeholder="Group" value={spec.group} onChange={(e) => {
-                      const newSpecs = [...productData.specs]; newSpecs[index].group = e.target.value; setProductData((prev) => ({ ...prev, specs: newSpecs }));
-                    }} className="pm-input" />
-                    <input type="text" placeholder="Key" value={spec.key} onChange={(e) => {
-                      const newSpecs = [...productData.specs]; newSpecs[index].key = e.target.value; setProductData((prev) => ({ ...prev, specs: newSpecs }));
-                    }} className="pm-input" />
-                    <input type="text" placeholder="Value" value={spec.value} onChange={(e) => {
-                      const newSpecs = [...productData.specs]; newSpecs[index].value = e.target.value; setProductData((prev) => ({ ...prev, specs: newSpecs }));
-                    }} className="pm-input" />
-                    <div style={{ display: "flex", gap: ".5rem" }}>
-                      <input type="text" placeholder="Unit" value={spec.unit} onChange={(e) => {
-                        const newSpecs = [...productData.specs]; newSpecs[index].unit = e.target.value; setProductData((prev) => ({ ...prev, specs: newSpecs }));
-                      }} className="pm-input" />
-                      <button type="button" onClick={() => {
-                        const newSpecs = productData.specs.filter((_, i) => i !== index);
-                        setProductData((prev) => ({ ...prev, specs: newSpecs }));
-                      }} className="pm-btn pm-btn--danger">Remove</button>
-                    </div>
-                  </div>
+                  <Grid
+                    container
+                    spacing={1}
+                    key={index}
+                    sx={{
+                      mb: 2,
+                      border: "1px solid #eee",
+                      p: 2,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        fullWidth
+                        placeholder="Group"
+                        value={spec.group}
+                        onChange={(e) => {
+                          const newSpecs = [...productData.specs];
+                          newSpecs[index].group = e.target.value;
+                          setProductData((prev) => ({
+                            ...prev,
+                            specs: newSpecs,
+                          }));
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        fullWidth
+                        placeholder="Key"
+                        value={spec.key}
+                        onChange={(e) => {
+                          const newSpecs = [...productData.specs];
+                          newSpecs[index].key = e.target.value;
+                          setProductData((prev) => ({
+                            ...prev,
+                            specs: newSpecs,
+                          }));
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                      <TextField
+                        fullWidth
+                        placeholder="Value"
+                        value={spec.value}
+                        onChange={(e) => {
+                          const newSpecs = [...productData.specs];
+                          newSpecs[index].value = e.target.value;
+                          setProductData((prev) => ({
+                            ...prev,
+                            specs: newSpecs,
+                          }));
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={3} display="flex" gap={1}>
+                      <TextField
+                        fullWidth
+                        placeholder="Unit"
+                        value={spec.unit}
+                        onChange={(e) => {
+                          const newSpecs = [...productData.specs];
+                          newSpecs[index].unit = e.target.value;
+                          setProductData((prev) => ({
+                            ...prev,
+                            specs: newSpecs,
+                          }));
+                        }}
+                      />
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={() => {
+                          const newSpecs = productData.specs.filter(
+                            (_, i) => i !== index
+                          );
+                          setProductData((prev) => ({
+                            ...prev,
+                            specs: newSpecs,
+                          }));
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </Grid>
+                  </Grid>
                 ))}
-                <button type="button" onClick={() => setProductData((prev) => ({ ...prev, specs: [...prev.specs, { group: "", key: "", value: "", unit: "" }] }))} className="pm-btn pm-btn--ghost">Add Specification</button>
-              </div>
-            </div>
+
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setProductData((prev) => ({
+                      ...prev,
+                      specs: [
+                        ...prev.specs,
+                        { group: "", key: "", value: "", unit: "" },
+                      ],
+                    }))
+                  }
+                >
+                  Add Specification
+                </Button>
+              </Box>
+            </Box>
           )}
 
           {/* Shipping Tab */}
           {activeTab === "shipping" && (
-            <div className="pm-section">
-              <div className="pm-grid-2">
-                <div>
-                  <label className="pm-label">Min Order Qty</label>
-                  <input type="number" min="1" name="minOrderQty" value={productData.minOrderQty} onChange={handleInputChange} className="pm-input" />
-                </div>
+            <Box>
+              {/* Order Qty + COD */}
+              <Grid container spacing={2} mb={3}>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Min Order Qty"
+                    name="minOrderQty"
+                    inputProps={{ min: 1 }}
+                    value={productData.minOrderQty}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
 
-                <div>
-                  <label className="pm-label">Max Order Qty</label>
-                  <input type="number" min="1" name="maxOrderQty" value={productData.maxOrderQty} onChange={handleInputChange} className="pm-input" />
-                </div>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Max Order Qty"
+                    name="maxOrderQty"
+                    inputProps={{ min: 1 }}
+                    value={productData.maxOrderQty}
+                    onChange={handleInputChange}
+                  />
+                </Grid>
 
-                <label className="pm-inline">
-                  <input type="checkbox" name="codAvailable" checked={productData.codAvailable} onChange={handleInputChange} />
-                  <span>COD Available</span>
-                </label>
-              </div>
+                <Grid item xs={12} sm={4} display="flex" alignItems="center">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="codAvailable"
+                        checked={productData.codAvailable}
+                        onChange={handleInputChange}
+                      />
+                    }
+                    label="COD Available"
+                  />
+                </Grid>
+              </Grid>
 
-              <div className="pm-divider">
-                <h3 className="pm-card-title">Return Policy</h3>
-                <div className="pm-grid-2">
-                  <label className="pm-inline">
-                    <input type="checkbox" checked={productData.returnPolicy.eligible} onChange={(e) => handleNestedChange("returnPolicy", "eligible", e.target.checked)} />
-                    <span>Eligible for Returns</span>
-                  </label>
-                  <div>
-                    <label className="pm-label">Return Period (Days)</label>
-                    <input type="number" min="0" value={productData.returnPolicy.days} onChange={(e) => handleNestedChange("returnPolicy", "days", parseInt(e.target.value))} className="pm-input" />
-                  </div>
-                </div>
-              </div>
+              {/* Return Policy */}
+              <Box mb={3}>
+                <Typography variant="h6" gutterBottom>
+                  Return Policy
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={productData.returnPolicy.eligible}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "returnPolicy",
+                              "eligible",
+                              e.target.checked
+                            )
+                          }
+                        />
+                      }
+                      label="Eligible for Returns"
+                    />
+                  </Grid>
 
-              <div className="pm-divider">
-                <h3 className="pm-card-title">Warranty</h3>
-                <div className="pm-grid-2">
-                  <div>
-                    <label className="pm-label">Warranty Type</label>
-                    <select value={productData.warranty.type} onChange={(e) => handleNestedChange("warranty", "type", e.target.value)} className="pm-select">
-                      <option value="No Warranty">No Warranty</option>
-                      <option value="Seller">Seller</option>
-                      <option value="Manufacturer">Manufacturer</option>
-                      <option value="International">International</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="pm-label">Duration (Months)</label>
-                    <input type="number" min="0" value={productData.warranty.durationMonths} onChange={(e) => handleNestedChange("warranty", "durationMonths", parseInt(e.target.value))} className="pm-input" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Return Period (Days)"
+                      inputProps={{ min: 0 }}
+                      value={productData.returnPolicy.days}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "returnPolicy",
+                          "days",
+                          parseInt(e.target.value)
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
 
-          {/* SEO Tab */}
-          {activeTab === "seo" && (
-            <div className="pm-section">
-              <div>
-                <label className="pm-label">Meta Title</label>
-                <input type="text" value={productData.seo.metaTitle} onChange={(e) => handleNestedChange("seo", "metaTitle", e.target.value)} className="pm-input" />
-              </div>
+              {/* Warranty */}
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Warranty
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Warranty Type"
+                      value={productData.warranty.type}
+                      onChange={(e) =>
+                        handleNestedChange("warranty", "type", e.target.value)
+                      }
+                    >
+                      <MenuItem value="No Warranty">No Warranty</MenuItem>
+                      <MenuItem value="Seller">Seller</MenuItem>
+                      <MenuItem value="Manufacturer">Manufacturer</MenuItem>
+                      <MenuItem value="International">International</MenuItem>
+                    </TextField>
+                  </Grid>
 
-              <div>
-                <label className="pm-label">Meta Description</label>
-                <textarea value={productData.seo.metaDescription} onChange={(e) => handleNestedChange("seo", "metaDescription", e.target.value)} rows={3} className="pm-textarea" />
-              </div>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Duration (Months)"
+                      inputProps={{ min: 0 }}
+                      value={productData.warranty.durationMonths}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "warranty",
+                          "durationMonths",
+                          parseInt(e.target.value)
+                        )
+                      }
+                    />
+                  </Grid>
+                </Grid>
+            </Box>
+          </Box>
+        )}
 
-              <div>
-                <label className="pm-label">Meta Keywords</label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem", marginTop: ".25rem" }}>
-                  {productData.seo.metaKeywords.map((keyword, index) => (
-                    <span key={index} className="pm-chip pm-chip--gray">
-                      {keyword}
-                      <button type="button" onClick={() => {
-                        const newKeywords = productData.seo.metaKeywords.filter((_, i) => i !== index);
-                        handleNestedChange("seo", "metaKeywords", newKeywords);
-                      }} className="pm-close" aria-label="Remove keyword">×</button>
-                    </span>
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: ".5rem", marginTop: ".5rem" }}>
-                  <input type="text" placeholder="Add keyword" className="pm-input" id="new-keyword" />
-                  <button type="button" onClick={() => {
+        {/* SEO Tab */}
+        {activeTab === "seo" && (
+          <Box>
+            {/* Meta Title */}
+            <Box mb={3}>
+              <TextField
+                fullWidth
+                label="Meta Title"
+                value={productData.seo.metaTitle}
+                onChange={(e) =>
+                  handleNestedChange("seo", "metaTitle", e.target.value)
+                }
+              />
+            </Box>
+
+            {/* Meta Description */}
+            <Box mb={3}>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Meta Description"
+                value={productData.seo.metaDescription}
+                onChange={(e) =>
+                  handleNestedChange("seo", "metaDescription", e.target.value)
+                }
+              />
+            </Box>
+
+            {/* Meta Keywords */}
+            <Box mb={3}>
+              <Typography variant="subtitle1" gutterBottom>
+                Meta Keywords
+              </Typography>
+
+              <Box display="flex" flexWrap="wrap" gap={1} mb={1}>
+                {productData.seo.metaKeywords.map((keyword, index) => (
+                  <Chip
+                    key={index}
+                    label={keyword}
+                    onDelete={() => {
+                      const newKeywords = productData.seo.metaKeywords.filter(
+                        (_, i) => i !== index
+                      );
+                      handleNestedChange("seo", "metaKeywords", newKeywords);
+                    }}
+                    color="default"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+
+              <Box display="flex" gap={1}>
+                <TextField
+                  id="new-keyword"
+                  placeholder="Add keyword"
+                  size="small"
+                  fullWidth
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => {
                     const input = document.getElementById("new-keyword");
                     if (input.value) {
-                      handleNestedChange("seo", "metaKeywords", [...productData.seo.metaKeywords, input.value]);
+                      handleNestedChange("seo", "metaKeywords", [
+                        ...productData.seo.metaKeywords,
+                        input.value,
+                      ]);
                       input.value = "";
                     }
-                  }} className="pm-btn pm-btn--ghost">Add</button>
-                </div>
-              </div>
+                  }}
+                >
+                  Add
+                </Button>
+              </Box>
+            </Box>
 
-              <div>
-                <label className="pm-label">Canonical URL</label>
-                <input type="url" value={productData.seo.canonicalUrl} onChange={(e) => handleNestedChange("seo", "canonicalUrl", e.target.value)} className="pm-input" />
-              </div>
-            </div>
-          )}
+            {/* Canonical URL */}
+            <Box mb={3}>
+              <TextField
+                fullWidth
+                type="url"
+                label="Canonical URL"
+                value={productData.seo.canonicalUrl}
+                onChange={(e) =>
+                  handleNestedChange("seo", "canonicalUrl", e.target.value)
+                }
+              />
+            </Box>
+          </Box>
+        )}
 
-          {/* Advanced Tab */}
-          {activeTab === "advanced" && (
-            <div className="pm-section">
-              <div>
-                <label className="pm-label">Tags</label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem", marginTop: ".25rem" }}>
-                  {productData.tags.map((tag, index) => (
-                    <span key={index} className="pm-chip pm-chip--blue">
-                      {tag}
-                      <button type="button" onClick={() => {
-                        const newTags = productData.tags.filter((_, i) => i !== index);
-                        setProductData((prev) => ({ ...prev, tags: newTags }));
-                      }} className="pm-close" aria-label="Remove tag">×</button>
-                    </span>
-                  ))}
-                </div>
-                <div style={{ display: "flex", gap: ".5rem", marginTop: ".5rem" }}>
-                  <input type="text" placeholder="Add tag" className="pm-input" id="new-tag" />
-                  <button type="button" onClick={() => {
+        {/* Advanced Tab */}
+        {activeTab === "advanced" && (
+          <Box>
+            {/* Tags */}
+            <Box mb={3}>
+              <Typography variant="subtitle1" gutterBottom>
+                Tags
+              </Typography>
+
+              {/* Existing Tags */}
+              <Box display="flex" flexWrap="wrap" gap={1} mb={1}>
+                {productData.tags.map((tag, index) => (
+                  <Chip
+                    key={index}
+                    label={tag}
+                    onDelete={() => {
+                      const newTags = productData.tags.filter(
+                        (_, i) => i !== index
+                      );
+                      setProductData((prev) => ({
+                        ...prev,
+                        tags: newTags,
+                      }));
+                    }}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+
+              {/* Add New Tag */}
+              <Box display="flex" gap={1}>
+                <TextField
+                  id="new-tag"
+                  placeholder="Add tag"
+                  size="small"
+                  fullWidth
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => {
                     const input = document.getElementById("new-tag");
                     if (input.value) {
-                      setProductData((prev) => ({ ...prev, tags: [...prev.tags, input.value] }));
-                      // input.value = "";
+                      setProductData((prev) => ({
+                        ...prev,
+                        tags: [...prev.tags, input.value],
+                      }));
+                      input.value = "";
                     }
-                  }} className="pm-btn pm-btn--ghost">Add</button>
-                </div>
-              </div>
+                  }}
+                >
+                  Add
+                </Button>
+              </Box>
+            </Box>
 
-              <div className="pm-divider">
-                <label className="pm-label">Deal of the Day</label>
-                <div className="pm-grid-2">
-                  <label className="pm-inline">
-                    <input type="checkbox" checked={productData.dealOfTheDay.status} onChange={(e) => handleNestedChange("dealOfTheDay", "status", e.target.checked)} />
-                    <span>Active</span>
-                  </label>
-                  <div>
-                    <label className="pm-label">Discount Percent</label>
-                    <input type="number" min="0" max="95" value={productData.dealOfTheDay.discountPercent} onChange={(e) => handleNestedChange("dealOfTheDay", "discountPercent", parseInt(e.target.value))} className="pm-input" />
-                  </div>
-                  <div>
-                    <label className="pm-label">Start Time</label>
-                    <input type="datetime-local" value={productData.dealOfTheDay.startTime} onChange={(e) => handleNestedChange("dealOfTheDay", "startTime", e.target.value)} className="pm-input" />
-                  </div>
-                  <div>
-                    <label className="pm-label">End Time</label>
-                    <input type="datetime-local" value={productData.dealOfTheDay.endTime} onChange={(e) => handleNestedChange("dealOfTheDay", "endTime", e.target.value)} className="pm-input" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+            {/* Deal of the Day */}
+            <Box mb={3}>
+              <Typography variant="subtitle1" gutterBottom>
+                Deal of the Day
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={productData.dealOfTheDay.status}
+                        onChange={(e) =>
+                          handleNestedChange(
+                            "dealOfTheDay",
+                            "status",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    }
+                    label="Active"
+                  />
+                </Grid>
 
-          {/* Form Actions */}
-          <div className="pm-divider" style={{ display: "flex", justifyContent: "flex-end", gap: ".75rem" }}>
-            <button type="button" onClick={onClose} className="pm-btn pm-btn--secondary">Cancel</button>
-            <button type="submit" className="pm-btn pm-btn--primary">{initialData ? "Update Product" : "Create Product"}</button>
-          </div>
-        </form>
-      </div>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    type="number"
+                    label="Discount Percent"
+                    inputProps={{ min: 0, max: 95 }}
+                    value={productData.dealOfTheDay.discountPercent}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "dealOfTheDay",
+                        "discountPercent",
+                        parseInt(e.target.value)
+                      )
+                    }
+                    fullWidth
+                  />
+                </Grid>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={2000}
-        onClose={() => setSnackbarOpen(false)}
-      >
-        <SnackbarContent
-          message={snackbarMessage}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    type="datetime-local"
+                    label="Start Time"
+                    InputLabelProps={{ shrink: true }}
+                    value={productData.dealOfTheDay.startTime}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "dealOfTheDay",
+                        "startTime",
+                        e.target.value
+                      )
+                    }
+                    fullWidth
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    type="datetime-local"
+                    label="End Time"
+                    InputLabelProps={{ shrink: true }}
+                    value={productData.dealOfTheDay.endTime}
+                    onChange={(e) =>
+                      handleNestedChange(
+                        "dealOfTheDay",
+                        "endTime",
+                        e.target.value
+                      )
+                    }
+                    fullWidth
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+        )}
+
+        {/* Form Actions */}
+        <div
+          className="pm-divider"
           style={{
-            backgroundColor: snackbarSeverity === "success" ? "green" : "red",
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: ".75rem",
           }}
-        />
-      </Snackbar>
+        >
+          <Button
+            type="button"
+            onClick={onClose}
+            className="pm-btn pm-btn--secondary"
+          >
+            Cancel
+          </Button>
+          <Button type="submit" className="pm-btn pm-btn--primary">
+            {initialData ? "Update Product" : "Create Product"}
+          </Button>
+        </div>
+      </form>
     </div>
+
+    <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={2000}
+      onClose={() => setSnackbarOpen(false)}
+    >
+      <SnackbarContent
+        message={snackbarMessage}
+        style={{
+          backgroundColor: snackbarSeverity === "success" ? "green" : "red",
+        }}
+      />
+    </Snackbar>
+  </div>
+
   );
 };
