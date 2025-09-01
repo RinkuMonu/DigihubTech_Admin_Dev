@@ -1,133 +1,143 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
-    Paper,
-    Typography,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    TextField,
-    Grid,
-    Button,
-    Pagination,
-    useMediaQuery,
-    IconButton,
-    Snackbar
-} from '@mui/material';
+  Paper,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Grid,
+  IconButton,
+  Box,
+} from "@mui/material";
+import { DeleteForeverOutlined, EditNoteOutlined } from "@mui/icons-material";
 
-import { apiDelete, apiGet } from '../../../api/apiMethods';
-import { DeleteForeverOutlined, EditNoteOutlined } from '@mui/icons-material';
-import DeleteDialog from '../Website/DeleteDialog';
-import CategoryForm from './CategoryForm';
+import DeleteDialog from "../Website/DeleteDialog";
+import CategoryForm from "./CategoryForm";
+import { apiDelete, apiGet } from "../../../api/apiMethods";
 
 const CategoryPage = () => {
-    const [data, setData] = useState([]); // Initialize as an array
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedItemId, setSelectedItemId] = useState(null);
+  const [data, setData] = useState([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState(null);
 
-    const API_ENDPOINT = `api/categories`;
+  const fetchData = async () => {
+    try {
+      const response = await apiGet("api/categories");
+      if (Array.isArray(response.data)) setData(response.data);
+      else console.error("Data is not an array:", response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
-    const isSmallScreen = useMediaQuery('(max-width:800px)');
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-    const fetchData = async () => {
-        try {
-            const response = await apiGet(API_ENDPOINT);
-            if (Array.isArray(response.data)) {
-                setData(response.data);
-            } else {
-                console.error('Data is not an array:', response.data);
-            }
-        } catch (error) {
-            console.error('There was an error fetching data!', error);
-        }
-    };
+  const deleteHandler = async (id) => {
+    try {
+      const response = await apiDelete(`api/categories/${id}`);
+      if (response.status === 200) fetchData();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+  const openDialog = (id) => {
+    setSelectedItemId(id);
+    setDialogOpen(true);
+  };
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setSelectedItemId(null);
+  };
 
-    const deleteHandler = async (id) => {
-        let API_URL = `api/categories/${id}`;
-        try {
-            const response = await apiDelete(API_URL); // Call the DELETE method
-            if (response.status === 200) {
-                fetchData();
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    };
-    const openDialog = (id) => {
-        setSelectedItemId(id);
-        setDialogOpen(true);
-    };
+  return (
+    <>
+      <Box sx={{ mb: 4, mt: 2 }}>
+        <Typography variant="h4" gutterBottom fontWeight={600}>
+          Product Categories
+        </Typography>
+        <CategoryForm dataHandler={fetchData} categories={data} />
+      </Box>
 
-    const closeDialog = () => {
-        setDialogOpen(false);
-        setSelectedItemId(null);
-    };
+      <TableContainer component={Paper} elevation={3}>
+        <Table size="small">
+          <TableHead>
+            <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+              <TableCell sx={{ fontWeight: 600 }}>#</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Image</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Parent Category</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Description</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                  No data available.
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.map((item, index) => (
+                <TableRow key={item._id} hover>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>
+                    {item.image ? (
+                      <img
+                        src={`${item.image}`}
+                        alt={item.name || "category-image"}
+                        style={{
+                          width: 60,
+                          height: 60,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                        }}
+                      />
+                    ) : (
+                      "No Image"
+                    )}
+                  </TableCell>
 
-    return (
-        <>
-            <Grid sx={{ mb: 3, paddingTop: '20px', position: isSmallScreen ? 'relative' : 'sticky', top: isSmallScreen ? 'auto' : 0, zIndex: 1000, backgroundColor: 'white' }} className='setdesigntofix'>
-                <Grid container alignItems="center" sx={{ mb: 2 }}>
-                    <Grid item xs>
-                        <Typography variant="h5" gutterBottom>Product Categories</Typography>
-                    </Grid>
-                </Grid>
-                <CategoryForm dataHandler={fetchData} />
-            </Grid>
+                  <TableCell>{item.subcategory || "—"}</TableCell>
+                  <TableCell>{item.description || "NA"}</TableCell>
+                  <TableCell>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <IconButton
+                        onClick={() => openDialog(item._id)}
+                        size="small"
+                        color="error"
+                      >
+                        <DeleteForeverOutlined fontSize="small" />
+                      </IconButton>
+                      <CategoryForm
+                        dataHandler={fetchData}
+                        categories={data}
+                        initialData={item}
+                      />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-            <TableContainer component={Paper} sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px', p: 1 }}>
-                <Table sx={{ borderCollapse: 'collapse' }}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>#</strong></TableCell>
-                            <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>Name</strong></TableCell>
-                            <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>Description</strong></TableCell>
-                            <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}><strong>Actions</strong></TableCell>
-                        </TableRow>
-                    </TableHead>
-
-                    <TableBody>
-                        {data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={12} align="center">No data available.</TableCell>
-                            </TableRow>
-                        ) : (
-                            data.map((item, index) => (
-                                <TableRow key={item._id}>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}>
-                                        {index + 1}
-                                    </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px', cursor: 'pointer' }}>
-                                        {item.name || 'NA'}
-                                    </TableCell>
-                                    <TableCell sx={{ border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}>
-                                        {item.description || 'NA'}
-                                    </TableCell>
-                                    <TableCell sx={{ display: 'flex', border: '1px solid #ddd', whiteSpace: 'nowrap', padding: '8px' }}>
-                                        <IconButton onClick={() => openDialog(item._id)}>
-                                            <DeleteForeverOutlined />
-                                        </IconButton>
-                                        <CategoryForm dataHandler={fetchData} initialData={item} />
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer >
-            <DeleteDialog
-                deleteHandler={deleteHandler}
-                itemId={selectedItemId}
-                open={dialogOpen}
-                onClose={closeDialog}
-            />
-        </>
-    );
+      <DeleteDialog
+        deleteHandler={deleteHandler}
+        itemId={selectedItemId}
+        open={dialogOpen}
+        onClose={closeDialog}
+      />
+    </>
+  );
 };
 
 export default CategoryPage;

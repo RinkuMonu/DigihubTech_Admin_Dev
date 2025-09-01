@@ -2,8 +2,10 @@ import axios from "axios";
 import { HandleAxiosError } from "./axioserror";
 
 const axiosInstance = axios.create({
+
   // baseURL: "http://192.168.1.6:5008",
   baseURL: "https://devbackend.digihubtech.in/",
+
   headers: {
     "Content-Type": "application/json",
   },
