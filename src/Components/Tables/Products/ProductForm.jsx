@@ -1714,7 +1714,6 @@ const useStyles = makeStyles({
 export const ProductForm = ({ isOpen, onClose, initialData }) => {
   const { user, categories } = useUser();
 
-
   const classes = useStyles();
 
   const [activeTab, setActiveTab] = useState("basic");
@@ -1914,7 +1913,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
   const handleImageUpload = (e, variantIndex = null) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-    
+
     setUploadedImages((prev) => {
       const key = variantIndex !== null ? `variant_${variantIndex}` : "product";
       return {
@@ -2731,15 +2730,22 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                 <Typography variant="subtitle1" gutterBottom>
                   Description *
                 </Typography>
-                <TextField
-                  fullWidth
-                  required
-                  multiline
-                  rows={4}
-                  name="description"
+                <ReactQuill
+                  theme="snow"
                   value={productData.description}
-                  onChange={handleInputChange}
+                  onChange={(value) =>
+                    handleInputChange({
+                      target: { name: "description", value },
+                    })
+                  }
                   placeholder="Enter product description"
+                  style={{
+                    background: "#fff",
+                    borderRadius: 4,
+                    width: "100%",
+                    height: "200px",
+                    marginBottom: "40px",
+                  }}
                 />
               </Box>
 
@@ -3039,273 +3045,272 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                     />
                   </Grid>
                 </Grid>
-            </Box>
-          </Box>
-        )}
-
-        {/* SEO Tab */}
-        {activeTab === "seo" && (
-          <Box>
-            {/* Meta Title */}
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                label="Meta Title"
-                value={productData.seo.metaTitle}
-                onChange={(e) =>
-                  handleNestedChange("seo", "metaTitle", e.target.value)
-                }
-              />
-            </Box>
-
-            {/* Meta Description */}
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                label="Meta Description"
-                value={productData.seo.metaDescription}
-                onChange={(e) =>
-                  handleNestedChange("seo", "metaDescription", e.target.value)
-                }
-              />
-            </Box>
-
-            {/* Meta Keywords */}
-            <Box mb={3}>
-              <Typography variant="subtitle1" gutterBottom>
-                Meta Keywords
-              </Typography>
-
-              <Box display="flex" flexWrap="wrap" gap={1} mb={1}>
-                {productData.seo.metaKeywords.map((keyword, index) => (
-                  <Chip
-                    key={index}
-                    label={keyword}
-                    onDelete={() => {
-                      const newKeywords = productData.seo.metaKeywords.filter(
-                        (_, i) => i !== index
-                      );
-                      handleNestedChange("seo", "metaKeywords", newKeywords);
-                    }}
-                    color="default"
-                    variant="outlined"
-                  />
-                ))}
               </Box>
+            </Box>
+          )}
 
-              <Box display="flex" gap={1}>
+          {/* SEO Tab */}
+          {activeTab === "seo" && (
+            <Box>
+              {/* Meta Title */}
+              <Box mb={3}>
                 <TextField
-                  id="new-keyword"
-                  placeholder="Add keyword"
-                  size="small"
                   fullWidth
+                  label="Meta Title"
+                  value={productData.seo.metaTitle}
+                  onChange={(e) =>
+                    handleNestedChange("seo", "metaTitle", e.target.value)
+                  }
                 />
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    const input = document.getElementById("new-keyword");
-                    if (input.value) {
-                      handleNestedChange("seo", "metaKeywords", [
-                        ...productData.seo.metaKeywords,
-                        input.value,
-                      ]);
-                      input.value = "";
-                    }
-                  }}
-                >
-                  Add
-                </Button>
-              </Box>
-            </Box>
-
-            {/* Canonical URL */}
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                type="url"
-                label="Canonical URL"
-                value={productData.seo.canonicalUrl}
-                onChange={(e) =>
-                  handleNestedChange("seo", "canonicalUrl", e.target.value)
-                }
-              />
-            </Box>
-          </Box>
-        )}
-
-        {/* Advanced Tab */}
-        {activeTab === "advanced" && (
-          <Box>
-            {/* Tags */}
-            <Box mb={3}>
-              <Typography variant="subtitle1" gutterBottom>
-                Tags
-              </Typography>
-
-              {/* Existing Tags */}
-              <Box display="flex" flexWrap="wrap" gap={1} mb={1}>
-                {productData.tags.map((tag, index) => (
-                  <Chip
-                    key={index}
-                    label={tag}
-                    onDelete={() => {
-                      const newTags = productData.tags.filter(
-                        (_, i) => i !== index
-                      );
-                      setProductData((prev) => ({
-                        ...prev,
-                        tags: newTags,
-                      }));
-                    }}
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
               </Box>
 
-              {/* Add New Tag */}
-              <Box display="flex" gap={1}>
+              {/* Meta Description */}
+              <Box mb={3}>
                 <TextField
-                  id="new-tag"
-                  placeholder="Add tag"
-                  size="small"
                   fullWidth
+                  multiline
+                  rows={3}
+                  label="Meta Description"
+                  value={productData.seo.metaDescription}
+                  onChange={(e) =>
+                    handleNestedChange("seo", "metaDescription", e.target.value)
+                  }
                 />
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    const input = document.getElementById("new-tag");
-                    if (input.value) {
-                      setProductData((prev) => ({
-                        ...prev,
-                        tags: [...prev.tags, input.value],
-                      }));
-                      input.value = "";
-                    }
-                  }}
-                >
-                  Add
-                </Button>
+              </Box>
+
+              {/* Meta Keywords */}
+              <Box mb={3}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Meta Keywords
+                </Typography>
+
+                <Box display="flex" flexWrap="wrap" gap={1} mb={1}>
+                  {productData.seo.metaKeywords.map((keyword, index) => (
+                    <Chip
+                      key={index}
+                      label={keyword}
+                      onDelete={() => {
+                        const newKeywords = productData.seo.metaKeywords.filter(
+                          (_, i) => i !== index
+                        );
+                        handleNestedChange("seo", "metaKeywords", newKeywords);
+                      }}
+                      color="default"
+                      variant="outlined"
+                    />
+                  ))}
+                </Box>
+
+                <Box display="flex" gap={1}>
+                  <TextField
+                    id="new-keyword"
+                    placeholder="Add keyword"
+                    size="small"
+                    fullWidth
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      const input = document.getElementById("new-keyword");
+                      if (input.value) {
+                        handleNestedChange("seo", "metaKeywords", [
+                          ...productData.seo.metaKeywords,
+                          input.value,
+                        ]);
+                        input.value = "";
+                      }
+                    }}
+                  >
+                    Add
+                  </Button>
+                </Box>
+              </Box>
+
+              {/* Canonical URL */}
+              <Box mb={3}>
+                <TextField
+                  fullWidth
+                  type="url"
+                  label="Canonical URL"
+                  value={productData.seo.canonicalUrl}
+                  onChange={(e) =>
+                    handleNestedChange("seo", "canonicalUrl", e.target.value)
+                  }
+                />
               </Box>
             </Box>
+          )}
 
-            {/* Deal of the Day */}
-            <Box mb={3}>
-              <Typography variant="subtitle1" gutterBottom>
-                Deal of the Day
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={productData.dealOfTheDay.status}
-                        onChange={(e) =>
-                          handleNestedChange(
-                            "dealOfTheDay",
-                            "status",
-                            e.target.checked
-                          )
-                        }
-                      />
-                    }
-                    label="Active"
-                  />
-                </Grid>
+          {/* Advanced Tab */}
+          {activeTab === "advanced" && (
+            <Box>
+              {/* Tags */}
+              <Box mb={3}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Tags
+                </Typography>
 
-                <Grid item xs={12} sm={6}>
+                {/* Existing Tags */}
+                <Box display="flex" flexWrap="wrap" gap={1} mb={1}>
+                  {productData.tags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      onDelete={() => {
+                        const newTags = productData.tags.filter(
+                          (_, i) => i !== index
+                        );
+                        setProductData((prev) => ({
+                          ...prev,
+                          tags: newTags,
+                        }));
+                      }}
+                      color="primary"
+                      variant="outlined"
+                    />
+                  ))}
+                </Box>
+
+                {/* Add New Tag */}
+                <Box display="flex" gap={1}>
                   <TextField
-                    type="number"
-                    label="Discount Percent"
-                    inputProps={{ min: 0, max: 95 }}
-                    value={productData.dealOfTheDay.discountPercent}
-                    onChange={(e) =>
-                      handleNestedChange(
-                        "dealOfTheDay",
-                        "discountPercent",
-                        parseInt(e.target.value)
-                      )
-                    }
+                    id="new-tag"
+                    placeholder="Add tag"
+                    size="small"
                     fullWidth
                   />
-                </Grid>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      const input = document.getElementById("new-tag");
+                      if (input.value) {
+                        setProductData((prev) => ({
+                          ...prev,
+                          tags: [...prev.tags, input.value],
+                        }));
+                        input.value = "";
+                      }
+                    }}
+                  >
+                    Add
+                  </Button>
+                </Box>
+              </Box>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    type="datetime-local"
-                    label="Start Time"
-                    InputLabelProps={{ shrink: true }}
-                    value={productData.dealOfTheDay.startTime}
-                    onChange={(e) =>
-                      handleNestedChange(
-                        "dealOfTheDay",
-                        "startTime",
-                        e.target.value
-                      )
-                    }
-                    fullWidth
-                  />
-                </Grid>
+              {/* Deal of the Day */}
+              <Box mb={3}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Deal of the Day
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={productData.dealOfTheDay.status}
+                          onChange={(e) =>
+                            handleNestedChange(
+                              "dealOfTheDay",
+                              "status",
+                              e.target.checked
+                            )
+                          }
+                        />
+                      }
+                      label="Active"
+                    />
+                  </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    type="datetime-local"
-                    label="End Time"
-                    InputLabelProps={{ shrink: true }}
-                    value={productData.dealOfTheDay.endTime}
-                    onChange={(e) =>
-                      handleNestedChange(
-                        "dealOfTheDay",
-                        "endTime",
-                        e.target.value
-                      )
-                    }
-                    fullWidth
-                  />
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      type="number"
+                      label="Discount Percent"
+                      inputProps={{ min: 0, max: 95 }}
+                      value={productData.dealOfTheDay.discountPercent}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "dealOfTheDay",
+                          "discountPercent",
+                          parseInt(e.target.value)
+                        )
+                      }
+                      fullWidth
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      type="datetime-local"
+                      label="Start Time"
+                      InputLabelProps={{ shrink: true }}
+                      value={productData.dealOfTheDay.startTime}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "dealOfTheDay",
+                          "startTime",
+                          e.target.value
+                        )
+                      }
+                      fullWidth
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      type="datetime-local"
+                      label="End Time"
+                      InputLabelProps={{ shrink: true }}
+                      value={productData.dealOfTheDay.endTime}
+                      onChange={(e) =>
+                        handleNestedChange(
+                          "dealOfTheDay",
+                          "endTime",
+                          e.target.value
+                        )
+                      }
+                      fullWidth
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
+              </Box>
             </Box>
-          </Box>
-        )}
+          )}
 
-        {/* Form Actions */}
-        <div
-          className="pm-divider"
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: ".75rem",
-          }}
-        >
-          <Button
-            type="button"
-            onClick={onClose}
-            className="pm-btn pm-btn--secondary"
+          {/* Form Actions */}
+          <div
+            className="pm-divider"
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: ".75rem",
+            }}
           >
-            Cancel
-          </Button>
-          <Button type="submit" className="pm-btn pm-btn--primary">
-            {initialData ? "Update Product" : "Create Product"}
-          </Button>
-        </div>
-      </form>
+            <Button
+              type="button"
+              onClick={onClose}
+              className="pm-btn pm-btn--secondary"
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="pm-btn pm-btn--primary">
+              {initialData ? "Update Product" : "Create Product"}
+            </Button>
+          </div>
+        </form>
+      </div>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <SnackbarContent
+          message={snackbarMessage}
+          style={{
+            backgroundColor: snackbarSeverity === "success" ? "green" : "red",
+          }}
+        />
+      </Snackbar>
     </div>
-
-    <Snackbar
-      open={snackbarOpen}
-      autoHideDuration={2000}
-      onClose={() => setSnackbarOpen(false)}
-    >
-      <SnackbarContent
-        message={snackbarMessage}
-        style={{
-          backgroundColor: snackbarSeverity === "success" ? "green" : "red",
-        }}
-      />
-    </Snackbar>
-  </div>
-
   );
 };
