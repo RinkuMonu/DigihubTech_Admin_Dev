@@ -3,7 +3,7 @@ import { HandleAxiosError } from "./axioserror";
 
 const axiosInstance = axios.create({
   // baseURL: "http://localhost:5008",
-  baseURL: "http://devbackend.digihubtech.in/",
+  baseURL: "https://devbackend.digihubtech.in/",
   headers: {
     "Content-Type": "application/json",
   },
