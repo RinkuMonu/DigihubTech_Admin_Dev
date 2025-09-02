@@ -16,8 +16,11 @@ import { Button, Modal, Form, Input, message } from "antd";
 
 import DeleteDialog from "../Website/DeleteDialog";
 import { apiDelete, apiGet, apiPost } from "../../../api/apiMethods";
+import { useUser } from "../../../Context/UserContext";
 
 const ParentCategoryPage = () => {
+  const { user } = useUser();
+
   const [data, setData] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -43,7 +46,9 @@ const ParentCategoryPage = () => {
 
   const deleteHandler = async (id) => {
     try {
-      const response = await apiDelete(`api/categories/${id}`);
+      const response = await apiDelete(`api/categories/${id}`, {
+        referenceWebsite: user?.referenceWebsite,
+      });
       if (response.status === 200) {
         message.success("Category deleted successfully");
         fetchData();
@@ -91,8 +96,9 @@ const ParentCategoryPage = () => {
         // Create new category
         await apiPost("api/categories/createMainCategory", {
           subcategory: values.subcategory,
+          referenceWebsite: user?.referenceWebsite,
         });
-        message.success("Category created successfully"); 
+        message.success("Category created successfully");
       }
 
       setIsModalOpen(false);
