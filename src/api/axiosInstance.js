@@ -4,8 +4,8 @@ import { HandleAxiosError } from "./axioserror";
 const axiosInstance = axios.create({
 
 
-  // baseURL: "http://192.168.1.70:5008",
-  baseURL: "https://devbackend.digihubtech.in/",
+  baseURL: "http://192.168.1.70:5008",
+  // baseURL: "https://devbackend.digihubtech.in/",
 
 
   headers: {
