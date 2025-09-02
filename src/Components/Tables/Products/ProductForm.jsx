@@ -32,12 +32,14 @@ import ReactQuill from "react-quill";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./productFrom.css";
+
 const useStyles = makeStyles({
   selectInput: {
     minWidth: 200,
     fontSize: "14px",
   },
 });
+
 
 // const ProductForm = ({ dataHandler, initialData, websites, addCategory }) => {
 //   const classes = useStyles();
@@ -1720,6 +1722,10 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
   const [brands, setBrands] = useState([]);
   const [websites, setWebsites] = useState([]);
   const [uploadedImages, setUploadedImages] = useState({});
+  const [imagePreviews, setImagePreviews] = useState({
+    product: [],
+    variants: {},
+  });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -1842,10 +1848,22 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
         });
       }
 
-      // Always reset uploadedImages when opening
+      // Always reset uploadedImages and imagePreviews when opening
       setUploadedImages({});
+      setImagePreviews({ product: [], variants: {} });
     }
   }, [isOpen, initialData, user?.referenceWebsite]);
+
+  // Clean up preview URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up all preview URLs
+      imagePreviews.product.forEach(preview => URL.revokeObjectURL(preview));
+      Object.values(imagePreviews.variants).forEach(variantPreviews => {
+        variantPreviews.forEach(preview => URL.revokeObjectURL(preview));
+      });
+    };
+  }, []);
 
   const fetchBrands = async () => {
     try {
@@ -1909,35 +1927,100 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
     }));
   };
 
-  // Handle image uploads
+  // Handle image uploads with preview
   const handleImageUpload = (e, variantIndex = null) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    setUploadedImages((prev) => {
-      const key = variantIndex !== null ? `variant_${variantIndex}` : "product";
-      return {
+    // Create preview URLs for immediate display
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+
+    if (variantIndex !== null) {
+      // For variant images
+      setUploadedImages(prev => ({
         ...prev,
-        [key]: [...(prev[key] || []), ...files],
-      };
-    });
+        [`variant_${variantIndex}`]: [...(prev[`variant_${variantIndex}`] || []), ...files],
+      }));
+      
+      setImagePreviews(prev => ({
+        ...prev,
+        variants: {
+          ...prev.variants,
+          [variantIndex]: [...(prev.variants[variantIndex] || []), ...newPreviews],
+        },
+      }));
+    } else {
+      // For product images
+      setUploadedImages(prev => ({
+        ...prev,
+        product: [...(prev.product || []), ...files],
+      }));
+      
+      setImagePreviews(prev => ({
+        ...prev,
+        product: [...prev.product, ...newPreviews],
+      }));
+    }
   };
 
-  // Remove image
+  // Remove image with cleanup
   const removeImage = (imageIndex, variantIndex = null) => {
     if (variantIndex !== null) {
-      setProductData((prev) => {
-        const variants = [...prev.variants];
-        variants[variantIndex].images = variants[variantIndex].images.filter(
-          (_, i) => i !== imageIndex
-        );
-        return { ...prev, variants };
-      });
-    } else {
-      setProductData((prev) => ({
+      // Clean up the preview URL
+      if (imagePreviews.variants[variantIndex]?.[imageIndex]) {
+        URL.revokeObjectURL(imagePreviews.variants[variantIndex][imageIndex]);
+      }
+      
+      // Update previews state
+      setImagePreviews(prev => ({
         ...prev,
-        images: prev.images.filter((_, i) => i !== imageIndex),
+        variants: {
+          ...prev.variants,
+          [variantIndex]: prev.variants[variantIndex]?.filter((_, i) => i !== imageIndex) || [],
+        },
       }));
+      
+      // Update uploaded files
+      setUploadedImages(prev => ({
+        ...prev,
+        [`variant_${variantIndex}`]: prev[`variant_${variantIndex}`]?.filter((_, i) => i !== imageIndex) || [],
+      }));
+      
+      // If it's an existing image from the server, remove from productData
+      if (productData.variants[variantIndex]?.images[imageIndex]) {
+        setProductData(prev => {
+          const variants = [...prev.variants];
+          variants[variantIndex].images = variants[variantIndex].images.filter(
+            (_, i) => i !== imageIndex
+          );
+          return { ...prev, variants };
+        });
+      }
+    } else {
+      // Clean up the preview URL
+      if (imagePreviews.product[imageIndex]) {
+        URL.revokeObjectURL(imagePreviews.product[imageIndex]);
+      }
+      
+      // Update previews state
+      setImagePreviews(prev => ({
+        ...prev,
+        product: prev.product.filter((_, i) => i !== imageIndex),
+      }));
+      
+      // Update uploaded files
+      setUploadedImages(prev => ({
+        ...prev,
+        product: prev.product?.filter((_, i) => i !== imageIndex) || [],
+      }));
+      
+      // If it's an existing image from the server, remove from productData
+      if (productData.images[imageIndex]) {
+        setProductData(prev => ({
+          ...prev,
+          images: prev.images.filter((_, i) => i !== imageIndex),
+        }));
+      }
     }
   };
 
@@ -1964,6 +2047,17 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
 
   const removeVariant = (index) => {
     if (productData.variants.length <= 1) return;
+
+    // Clean up variant image previews
+    if (imagePreviews.variants[index]) {
+      imagePreviews.variants[index].forEach(preview => URL.revokeObjectURL(preview));
+    }
+    
+    setImagePreviews(prev => {
+      const newVariants = { ...prev.variants };
+      delete newVariants[index];
+      return { ...prev, variants: newVariants };
+    });
 
     setProductData((prev) => {
       const variants = [...prev.variants];
@@ -2179,9 +2273,10 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Product Images</Typography>
                 <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
+                  {/* Show existing images from server */}
                   {productData.images.map((image, index) => (
                     <Box
-                      key={index}
+                      key={`existing-${index}`}
                       sx={{
                         position: "relative",
                         width: 100,
@@ -2194,6 +2289,43 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                       <img
                         src={image}
                         alt={`Product ${index}`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          bgcolor: "rgba(255,255,255,0.7)",
+                        }}
+                        onClick={() => removeImage(index)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
+                  
+                  {/* Show uploaded image previews */}
+                  {imagePreviews.product.map((preview, index) => (
+                    <Box
+                      key={`preview-${index}`}
+                      sx={{
+                        position: "relative",
+                        width: 100,
+                        height: 100,
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        boxShadow: 1,
+                      }}
+                    >
+                      <img
+                        src={preview}
+                        alt={`Preview ${index}`}
                         style={{
                           width: "100%",
                           height: "100%",
@@ -2232,6 +2364,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                       type="file"
                       hidden
                       multiple
+                      accept="image/*"
                       onChange={handleImageUpload}
                     />
                   </Button>
@@ -2355,9 +2488,10 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                   <Box mt={2}>
                     <Typography variant="subtitle1">Variant Images</Typography>
                     <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
+                      {/* Show existing variant images from server */}
                       {variant.images.map((image, imgIndex) => (
                         <Box
-                          key={imgIndex}
+                          key={`existing-${imgIndex}`}
                           sx={{
                             position: "relative",
                             width: 100,
@@ -2390,6 +2524,44 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                           </IconButton>
                         </Box>
                       ))}
+                      
+                      {/* Show uploaded variant image previews */}
+                      {imagePreviews.variants[index]?.map((preview, imgIndex) => (
+                        <Box
+                          key={`preview-${imgIndex}`}
+                          sx={{
+                            position: "relative",
+                            width: 100,
+                            height: 100,
+                            borderRadius: 2,
+                            overflow: "hidden",
+                            boxShadow: 1,
+                          }}
+                        >
+                          <img
+                            src={preview}
+                            alt={`Preview ${index} ${imgIndex}`}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            sx={{
+                              position: "absolute",
+                              top: 4,
+                              right: 4,
+                              bgcolor: "rgba(255,255,255,0.7)",
+                            }}
+                            onClick={() => removeImage(imgIndex, index)}
+                          >
+                            ×
+                          </IconButton>
+                        </Box>
+                      ))}
+                      
                       <Button
                         variant="outlined"
                         component="label"
@@ -2407,6 +2579,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                           type="file"
                           hidden
                           multiple
+                          accept="image/*"
                           onChange={(e) => handleImageUpload(e, index)}
                         />
                       </Button>
