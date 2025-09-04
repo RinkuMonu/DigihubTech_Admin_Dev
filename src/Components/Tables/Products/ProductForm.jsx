@@ -2417,7 +2417,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                   <Box mt={3}>
                     <Typography variant="subtitle1">Variant Options</Typography>
                     <Box display="flex" flexDirection="column" gap={1} mt={1}>
-                      {Object.entries(variant.options).map(([key, value]) => (
+                      {Object.entries(variant?.options ?? {}).map(([key, value]) => (
                         <Box
                           key={key}
                           display="flex"
@@ -2527,7 +2527,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                           type="number"
                           placeholder="Length"
                           value={variant.dimensions.l}
-                          onChange={(e) =>
+                          onChange={(e) => 
                             handleVariantChange(
                               index,
                               "dimensions.l",
