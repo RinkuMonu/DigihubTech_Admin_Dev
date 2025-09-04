@@ -17,8 +17,11 @@ import { DeleteForeverOutlined, EditNoteOutlined } from "@mui/icons-material";
 import DeleteDialog from "../Website/DeleteDialog";
 import CategoryForm from "./CategoryForm";
 import { apiDelete, apiGet } from "../../../api/apiMethods";
+import { useUser } from "../../../Context/UserContext";
 
 const CategoryPage = () => {
+  const { user } = useUser();
+
   const [data, setData] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);
@@ -39,7 +42,9 @@ const CategoryPage = () => {
 
   const deleteHandler = async (id) => {
     try {
-      const response = await apiDelete(`api/categories/${id}`);
+      const response = await apiDelete(`api/categories/${id}`, {
+        referenceWebsite: user?.referenceWebsite,
+      });
       if (response.status === 200) fetchData();
     } catch (error) {
       console.error(error);
