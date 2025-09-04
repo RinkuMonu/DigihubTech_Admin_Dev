@@ -2527,7 +2527,7 @@ export const ProductForm = ({ isOpen, onClose, initialData }) => {
                           type="number"
                           placeholder="Length"
                           value={variant.dimensions.l}
-                          onChange={(e) =>
+                          onChange={(e) => 
                             handleVariantChange(
                               index,
                               "dimensions.l",
