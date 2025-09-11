@@ -585,12 +585,12 @@ const ProductsPage = () => {
     try {
       const response = await apiGet(API_ENDPOINT, {
         referenceWebsite: filterWebsite,
-        // search: searchInput,
-        // page: currentPage,
-        // limit: pageSize,
-        // category: filterCategory,
-        // sortBy,
-        // sortOrder,
+        search: searchInput,
+        page: currentPage,
+        limit: pageSize,
+        category: filterCategory,
+        sortBy,
+        sortOrder,
       });
       console.log(
         "responseresponseresponseresponserinku",
