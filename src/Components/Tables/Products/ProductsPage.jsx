@@ -580,6 +580,7 @@ const ProductsPage = () => {
   const API_ENDPOINT = `api/product/getproducts`;
 
   const { user, setCategories, categories } = useUser();
+  const newCategory = categories?.filter(data => data.name);
 
   const fetchData = async () => {
     try {
@@ -653,7 +654,7 @@ const ProductsPage = () => {
     sortOrder,
     pageSize,
     filterCategory,
-    isModelOpen 
+    isModelOpen
   ]);
 
   const deleteHandler = async (id) => {
@@ -834,9 +835,9 @@ const ProductsPage = () => {
                 size="small"
               >
                 <MenuItem value="">All</MenuItem>
-                {categories &&
-                  categories.map((item, index) => (
-                    <MenuItem key={index} value={item._id}>
+                {newCategory &&
+                  newCategory.map((item, index) => (
+                    <MenuItem key={index} value={item.name}>
                       {item.name}
                     </MenuItem>
                   ))}
